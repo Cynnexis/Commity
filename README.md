@@ -3,7 +3,7 @@
 ![language: python][shield-language] ![license: GPL][shield-license] ![python: 3.7][shield-python-version]
 
 Commity is a script that print the commits from a git branch in a
-user-friendly way using MarkDown format, inspired from default
+user-friendly way using Markdown format, inspired from default
 pull-requests templates in BitBucket.
 
 ## Getting Started
@@ -23,7 +23,7 @@ pip install gitpython
 ### Installing
 
 To install this script, you first need to clone this project, and
-then execute `commity.py`.
+then execute [`commity.py`](https://github.com/Cynnexis/Commity/blob/master/commity.py).
 
 ### Usage
 
@@ -60,8 +60,9 @@ to fight some evil bugs, and help make UNIX a better system!
 ## License
 
 This project is under the GNU Affero General Public License v3.0.
-Please see the LICENSE.txt file for more detail (it's a really
-fascinating story written in there!)
+Please see the [LICENSE.txt](https://github.com/Cynnexis/Commity/blob/master/LICENSE.txt)
+file for more detail (it's a really fascinating story written in
+there!)
 
 ## Acknowledgments
 
