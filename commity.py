@@ -127,6 +127,8 @@ commits = list(repo.iter_commits(args.branch))
 for commit in commits:
 	# If we detect we are not in the same branch anymore (come back to the branch parent), then we stop the loop.
 	branch_name = get_head_name_from_commit(commit)
-	if branch_name == args.branch:
+	if branch_name == args.branch or branch_name not in repo.branches:
 		# Print the commit
 		print(beautify_commit(commit))
+
+repo.close()
