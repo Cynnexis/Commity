@@ -33,10 +33,12 @@ To execute Commity, you might need to specify some arguments:
 the current folder is taken.
 * `-b` or `--branch`: The name of the branch where to get the
 commits. By default, the current branch is taken.
+* `-o` or `--output`: The output file. All information will be written in the
+given file. If the file is invalid, or no file is given, stdout is used instead.
 
 **Example:**
 
-`python commity.py -r C:\Users\Foo\MyProject -b feat/gui-buttons`
+`python commity.py -r C:\Users\Foo\MyProject -b feat/gui-buttons -o output.txt`
 
 ## Built With
 

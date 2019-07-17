@@ -2,6 +2,8 @@
 
 import os
 import re
+import traceback
+
 import git
 import argparse
 from typing import *
@@ -11,7 +13,21 @@ from typeguard import typechecked
 p = argparse.ArgumentParser(prog="Commity", description="Print commits of a specific branch as a list.")
 p.add_argument("-r", "--repo", default=None, help="The repository. If not given, default value is the current directory.")
 p.add_argument("-b", "--branch", default=None, help="The branch were to collect the commits. If not given, default value is current branch.")
+p.add_argument("-o", "--output", default=None, help="The output file. All information will be written in the given file. If the file is invalid, or no file is given, stdout is used instead.")
 args = p.parse_args()
+
+
+def log(values, end='\n', flush: bool = True):
+	global args
+	if args.output is not None:
+		try:
+			f = open(args.output, mode='a', encoding="utf-8")
+			f.write(values + end)
+		except OSError:
+			print(values, end=end, flush=flush)
+	else:
+		print(values, end=end, flush=flush)
+
 
 # If no repo has been given, take the current directory
 if args.repo is None:
@@ -21,12 +37,12 @@ if args.repo is None:
 try:
 	repo = git.Repo(args.repo)
 except git.exc.InvalidGitRepositoryError:
-	print("ERROR: The given folder is not a git repo: \"{}\"".format(args.repo))
+	log("ERROR: The given folder is not a git repo: \"{}\"".format(args.repo))
 	exit(-1)
 
 # noinspection PyUnboundLocalVariable
 if repo.bare:
-	print("ERROR: The given repository is bare.")
+	log("ERROR: The given repository is bare.")
 	exit(-2)
 
 # If no branch has been given, take the current branch (it can be `master`)
@@ -34,10 +50,14 @@ if args.branch is None:
 	args.branch = repo.active_branch.name
 
 if args.branch not in repo.branches:
-	print("The branch \"{}\" does not exist.".format(args.branch))
+	log("The branch \"{}\" does not exist.".format(args.branch))
 	exit(-3)
 
-print("On branch " + args.branch)
+# If an output has been given and the file already exist, remove it:
+if os.path.exists(args.output) and os.path.isfile(args.output):
+	os.remove(args.output)
+
+log("On branch " + args.branch, end="\n\n")
 
 # Pattern inspired from Joey's, https://stackoverflow.com/a/12093994/7347145 (consulted on July the 9th, 2019)
 # This pattern detect the name of the branch in the revision string of a commit
@@ -129,6 +149,6 @@ for commit in commits:
 	branch_name = get_head_name_from_commit(commit)
 	if branch_name == args.branch or branch_name not in repo.branches:
 		# Print the commit
-		print(beautify_commit(commit))
+		log(beautify_commit(commit))
 
 repo.close()
