@@ -2,8 +2,21 @@ version: '3.7'
 services:
   commity:
     container_name: commity
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # Use the following lines to build the image from scratch
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+    # Use this line if the image is already compiled:
+    image: cynnexis/commity
 #    volumes:
 #      - './:/root'
+
+  test:
+    container_name: commity_test
+    # Use the following lines to build the image from scratch
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+    # Use this line if the image is already compiled:
+    image: cynnexis/commity
+    command: bash -c "source ~/.bashrc && python -m unittest ~/commity/test/commity-test.py"

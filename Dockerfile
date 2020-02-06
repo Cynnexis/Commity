@@ -1,3 +1,8 @@
+# cynnexis/commity
+#
+# To build this image:
+# docker build -t cynnexis/commity .
+
 FROM python:3.7.6-buster
 
 USER root
