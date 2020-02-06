@@ -54,7 +54,7 @@ if args.branch not in repo.branches:
 	exit(-3)
 
 # If an output has been given and the file already exist, remove it:
-if os.path.exists(args.output) and os.path.isfile(args.output):
+if args.output is not None and os.path.exists(args.output) and os.path.isfile(args.output):
 	os.remove(args.output)
 
 log("On branch " + args.branch, end="\n\n")

@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  commity:
+    container_name: commity
+    build:
+      context: .
+      dockerfile: Dockerfile
+#    volumes:
+#      - './:/root'
