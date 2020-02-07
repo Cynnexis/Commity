@@ -21,7 +21,7 @@ pip install --no-cache-dir -r requirements.txt
 #                       | /
 #                       |/
 #                       |
-#                       * commit 7 (lorem)
+#                       * commit 7 (master)
 #                       |     📝 Update README
 # commit 6 (license) *  |
 #   Add LICENSE      |  |
