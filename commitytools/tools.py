@@ -26,12 +26,12 @@ def commity_repo(repo: Optional[str] = None, branch: Optional[str] = None, outpu
 	try:
 		repo = git.Repo(repo)
 	except git.exc.InvalidGitRepositoryError:
-		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo))
+		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo), output=output)
 		exit(-1)
 	
 	# noinspection PyUnboundLocalVariable
 	if repo.bare:
-		log("ERROR: The given repository is bare.")
+		log("ERROR: The given repository is bare.", output=output)
 		exit(-2)
 	
 	# If no branch has been given, take the current branch (it might be `master`)
@@ -39,14 +39,14 @@ def commity_repo(repo: Optional[str] = None, branch: Optional[str] = None, outpu
 		branch = repo.active_branch.name
 	
 	if branch not in repo.branches:
-		log("The branch \"{}\" does not exist.".format(branch))
+		log("The branch \"{}\" does not exist.".format(branch), output=output)
 		exit(-3)
 	
 	# If an output has been given and the file already exist, remove it:
 	if output is not None and os.path.exists(output) and os.path.isfile(output):
 		os.remove(output)
 	
-	log("On branch " + branch, end="\n\n")
+	log("On branch " + branch, end="\n\n", output=output)
 	
 	# Get the list of all commits from the given branch
 	commits = list(repo.iter_commits(branch))
@@ -55,14 +55,14 @@ def commity_repo(repo: Optional[str] = None, branch: Optional[str] = None, outpu
 		branch_name = get_head_name_from_commit(commit)
 		if branch_name == branch or branch_name not in repo.branches:
 			# Print the commit
-			log(beautify_commit(commit))
+			log(beautify_commit(commit), output=output)
 	
 	repo.close()
 	return log_buffer
 
 @typechecked
 @typechecked
-def log(values: Any, output: Optional[str] = None, mode: str = 'a', encoding: str = "utf-8", end='\n', flush: bool = True, *args):
+def log(values: Any = '', output: Optional[str] = None, mode: str = 'a', encoding: str = "utf-8", end='\n', flush: bool = True, *args):
 	global log_buffer
 	log_buffer += values + end
 	if isinstance(values, str) and args is not None and len(args) > 0:
