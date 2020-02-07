@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, Any
 
 import git
 from typeguard import typechecked
 
 log_buffer = ""
+DEBUG = bool(os.getenv("DEBUG", "False"))
 
 # Pattern inspired from Joey's, https://stackoverflow.com/a/12093994/7347145 (consulted on July the 9th, 2019)
 # This pattern detect the name of the branch in the revision string of a commit
@@ -60,9 +61,12 @@ def commity_repo(repo: Optional[str] = None, branch: Optional[str] = None, outpu
 	return log_buffer
 
 @typechecked
-def log(values, output: Optional[str] = None, mode: str = 'a', encoding: str = "utf-8", end='\n', flush: bool = True):
+@typechecked
+def log(values: Any, output: Optional[str] = None, mode: str = 'a', encoding: str = "utf-8", end='\n', flush: bool = True, *args):
 	global log_buffer
 	log_buffer += values + end
+	if isinstance(values, str) and args is not None and len(args) > 0:
+		values = values.format(*args)
 	if output is not None:
 		try:
 			f = open(output, mode=mode, encoding=encoding)

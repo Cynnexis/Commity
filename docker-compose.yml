@@ -9,7 +9,7 @@ services:
     # Use this line if the image is already compiled:
     image: cynnexis/commity
 #    volumes:
-#      - './:/root'
+#      - './:/root/commity'
 
   test:
     container_name: commity_test
@@ -19,4 +19,6 @@ services:
 #      dockerfile: Dockerfile
     # Use this line if the image is already compiled:
     image: cynnexis/commity
+    environment:
+      - DEBUG=True
     command: bash -c "source ~/.bashrc && python -m unittest ~/commity/test/commity-test.py"

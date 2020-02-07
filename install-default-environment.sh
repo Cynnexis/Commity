@@ -7,7 +7,7 @@ apt-get install -qy git
 apt-get install -qy vim
 
 cp default-gitconfig.ini ~/.gitconfig
-touch .bashrc
+touch ~/.bashrc
 
 # Install python packages
 pip install --no-cache-dir -r requirements.txt
@@ -49,8 +49,9 @@ cd ~
 mkdir git-test-repo
 cd git-test-repo
 TEST_REPO=$(pwd)
-echo "TEST_REPO=$TEST_REPO" >> /etc/environment
-echo "export TEST_REPO=$TEST_REPO" >> ~/.bashrc
+DEBUG="True"
+echo -e "TEST_REPO=$TEST_REPO\nDEBUG=$DEBUG" >> /etc/environment
+echo -e "export TEST_REPO=$TEST_REPO\nexport DEBUG=$DEBUG" >> ~/.bashrc
 source ~/.bashrc
 
 # Add README in repo
