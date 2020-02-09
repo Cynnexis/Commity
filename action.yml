@@ -1,0 +1,19 @@
+# action.yml
+# See tutorial: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-a-docker-container-action
+name: 'Commity'
+description: 'Commity is a script that print the commits from a git branch in a user-friendly way using MarkDown format, inspired from default pull-requests templates in BitBucket.'
+inputs:
+  command:
+    description: 'Command to execute. Can be "run", "lint", "fix lint" (or "lint fix"), or "test".'
+    required: true
+    default: 'run'
+outputs:
+  output:
+    description: 'The standard output of the command. It can be useful to have it for the tests.'
+  exit_code:
+    description: 'The exit code of the command. If it is 0, it means the command was successfully executed ; otherwise an error occurred, and the pipeline must fail.'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.command }}

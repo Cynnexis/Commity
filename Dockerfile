@@ -9,7 +9,8 @@ USER root
 WORKDIR /root/commity
 
 COPY . .
+RUN chmod +x docker-script.sh
 RUN chmod +x install-default-environment.sh
 RUN ./install-default-environment.sh
 
-CMD [ "bash", "-c", "python commity.py -r ~/git-test-repo -b getting-started" ]
+ENTRYPOINT ["bash", "./docker-script.sh"]
