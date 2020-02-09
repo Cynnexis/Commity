@@ -11,6 +11,7 @@ WORKDIR /root/commity
 COPY . .
 RUN chmod +x docker-script.sh
 RUN chmod +x install-default-environment.sh
+RUN ls -al
 RUN ./install-default-environment.sh
 
-ENTRYPOINT ["./docker-script.sh"]
+ENTRYPOINT ["bash", "./docker-script.sh"]
