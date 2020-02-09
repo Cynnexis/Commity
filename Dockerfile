@@ -12,4 +12,4 @@ COPY . .
 RUN chmod +x install-default-environment.sh
 RUN ./install-default-environment.sh
 
-ENTRYPOINT ["docker-script.sh"]
+ENTRYPOINT ["/docker-script.sh"]
