@@ -28,7 +28,7 @@ then
   exit_code=$?
 elif [ $command == "test" ]
 then
-  output=$(python -m unittest ~/commity/test/commity-test.py)
+  output=$(python -m unittest test/commity-test.py)
   exit_code=$?
 fi
 
