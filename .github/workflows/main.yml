@@ -19,3 +19,19 @@ jobs:
         run: echo ${{ steps.yapf.outputs.output }}
       - name: Print the exit code
         run: echo Exit code ${{ steps.yapf.outputs.exitCode }}
+  test:
+    runs-on: ubuntu-18.04
+    name: Test the source code of the project.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: commitytest
+        uses: ./
+        id: commitytest
+        with:
+          command: 'test'
+      # Print the output from the `yapf` step
+      - name: Print the output
+        run: echo ${{ steps.yapf.outputs.output }}
+      - name: Print the exit code
+        run: echo Exit code ${{ steps.yapf.outputs.exitCode }}
