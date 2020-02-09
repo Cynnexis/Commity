@@ -17,3 +17,5 @@ jobs:
       # Print the output from the `yapf` step
       - name: Print the output
         run: echo ${{ steps.yapf.outputs.output }}
+      - name: Print the exit code
+        run: echo Exit code ${{ steps.yapf.outputs.exitCode }}
