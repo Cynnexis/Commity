@@ -9,6 +9,7 @@ USER root
 WORKDIR /root/commity
 
 COPY . .
+RUN chmod +x docker-script.sh
 RUN chmod +x install-default-environment.sh
 RUN ./install-default-environment.sh
 
