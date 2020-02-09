@@ -1,0 +1,17 @@
+name: CI
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-18.04
+    name: Check that the source code is correctly formatted.
+    steps:
+      - name: Run YAPF
+        id: yapf
+        uses: actions/commity@v1
+        with:
+          command: 'lint'
+      # Print the output from the `yapf` step
+      - name: Print the output
+        run: echo ${{ steps.yapf.outputs.output }}

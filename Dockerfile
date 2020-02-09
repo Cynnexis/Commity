@@ -12,4 +12,4 @@ COPY . .
 RUN chmod +x install-default-environment.sh
 RUN ./install-default-environment.sh
 
-CMD [ "bash", "-c", "python commity.py -r ~/git-test-repo -b getting-started" ]
+ENTRYPOINT ["docker-script.sh"]
