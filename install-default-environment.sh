@@ -81,7 +81,7 @@ git add .
 git commit -m ":pencil: Add more content in Getting Started"
 # Merge (conserve branch)
 git checkout master
-git merge getting-started
+git merge getting-started --no-ff
 
 # Create new branch
 git checkout -b license
