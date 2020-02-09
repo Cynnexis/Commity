@@ -1,6 +1,6 @@
 # Commity
 
-![language: python][shield-language] ![license: GPL][shield-license] ![python: 3.7][shield-python-version]
+![language: python][shield-language] ![license: GPL][shield-license] ![python: 3.7][shield-python-version] ![Commity CI/CD](https://github.com/Cynnexis/Commity/workflows/Commity%20CI/CD/badge.svg)
 
 Commity is a script that print the commits from a git branch in a
 user-friendly way using Markdown format, inspired from default
