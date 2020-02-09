@@ -8,7 +8,7 @@ class CommityTest(unittest.TestCase):
 	
 	def __init__(self, *args, **kwargs):
 		super(CommityTest, self).__init__(*args, **kwargs)
-		self.test_repo_dir = os.getenv("TEST_REPO", "~/git-test-repo")
+		self.test_repo_dir = os.getenv("TEST_REPO", "/git-test-repo")
 	
 	def test_repo(self):
 		print("Does {} exists?".format(self.test_repo_dir))
