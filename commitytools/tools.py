@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-from typing import Optional, Union, Tuple, Any, List, Iterable
+from typing import Optional, Union, Tuple, Any, Iterable
 import networkx as nx
 
 import git
@@ -12,10 +12,14 @@ DEBUG = bool(os.getenv("DEBUG", "False"))
 
 # Pattern inspired from Joey's, https://stackoverflow.com/a/12093994/7347145 (consulted on July the 9th, 2019)
 # This pattern detect the name of the branch in the revision string of a commit
-rev_pattern = re.compile(r"([a-fA-F0-9]{40})\s((?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!@$)(?!.*\\)[^\000-\037\177 ~^:?*[]+/?[^\000-\037\177 ~^:?*[]+(?<!\.lock)(?<!/)(?<!\.))(?:\^([0-9]+))?(?:~([0-9]+))?")
+rev_pattern = re.compile(
+	r"([a-fA-F0-9]{40})\s((?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!@$)(?!.*\\)[^\000-\037\177 ~^:?*[]+/?[^\000-\037\177 ~^:?*[]+(?<!\.lock)(?<!/)(?<!\.))(?:\^([0-9]+))?(?:~([0-9]+))?"
+)
 
 @typechecked
-def commity_repo(repo: Optional[str] = None, branch: Optional[str] = None, output: Optional[str] = None) -> str:
+def commity_repo(repo: Optional[str] = None,
+					branch: Optional[str] = None,
+					output: Optional[str] = None) -> str:
 	global log_buffer
 	log_buffer = ""
 	
@@ -30,7 +34,8 @@ def commity_repo(repo: Optional[str] = None, branch: Optional[str] = None, outpu
 	try:
 		repo = git.Repo(repo)
 	except git.exc.InvalidGitRepositoryError:
-		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo), output=output)
+		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo),
+			output=output)
 		exit(-1)
 	
 	# noinspection PyUnboundLocalVariable
@@ -52,7 +57,15 @@ def commity_repo(repo: Optional[str] = None, branch: Optional[str] = None, outpu
 	if DEBUG:
 		try:
 			import matplotlib.pyplot as plt
-			nx.draw(graph, labels={c: c.summary for c in graph}, node_size=400, font_size=16, font_color='r', pos=nx.spring_layout(graph, k=0.15, iterations=20))
+			nx.draw(
+				graph,
+				labels={c: c.summary for c in graph},
+				node_size=400,
+				font_size=16,
+				font_color='r',
+				pos=nx.spring_layout(graph,
+										k=0.15,
+										iterations=20))
 			plt.savefig("graph.png")
 		except ImportError:
 			pass
@@ -95,7 +108,13 @@ def dlog(values: Any, *args):
 		print("DEBUG> {}".format(values))
 
 @typechecked
-def log(values: Any = '', output: Optional[str] = None, mode: str = 'a', encoding: str = "utf-8", end='\n', flush: bool = True, *args):
+def log(values: Any = '',
+		output: Optional[str] = None,
+		mode: str = 'a',
+		encoding: str = "utf-8",
+		end='\n',
+		flush: bool = True,
+		*args):
 	global log_buffer
 	log_buffer += values + end
 	if isinstance(values, str) and args is not None and len(args) > 0:
@@ -157,7 +176,10 @@ def beautify_commit(commit: Union[str, git.Commit]) -> str:
 	:return: Return the commit in a more adapted format.
 	"""
 	
-	def add_bullet(part: str, bullet: str = '*', prefix: str = '', suffix: str = '\n') -> str:
+	def add_bullet(part: str,
+					bullet: str = '*',
+					prefix: str = '',
+					suffix: str = '\n') -> str:
 		if not part.startswith(bullet):
 			return prefix + bullet + ' ' + part + suffix
 		else:

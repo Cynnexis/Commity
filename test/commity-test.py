@@ -4,7 +4,6 @@ import unittest
 
 from commitytools.tools import commity_repo
 
-
 class CommityTest(unittest.TestCase):
 	
 	def __init__(self, *args, **kwargs):
@@ -24,8 +23,12 @@ class CommityTest(unittest.TestCase):
 		lines = list(filter(lambda s: len(s) > 0, lines))
 		
 		self.assertEqual(len(lines), 2, "Expected 2 lines.\nLines: {}".format(lines))
-		self.assertEqual(lines[0], "* :pencil: Add more content in Getting Started", "Actual value: {}".format(lines[0]))
-		self.assertEqual(lines[1], "* :pencil: Add Getting Started section", "Actual value: {}".format(lines[1]))
+		self.assertEqual(lines[0],
+							"* :pencil: Add more content in Getting Started",
+							"Actual value: {}".format(lines[0]))
+		self.assertEqual(lines[1],
+							"* :pencil: Add Getting Started section",
+							"Actual value: {}".format(lines[1]))
 	
 	def test_license(self):
 		output = commity_repo(self.test_repo_dir, "license")
@@ -35,7 +38,9 @@ class CommityTest(unittest.TestCase):
 		lines = list(filter(lambda s: len(s) > 0, lines))
 		
 		self.assertEqual(len(lines), 1, "Expected 1 line.\nLines: {}".format(lines))
-		self.assertEqual(lines[0], "* :page_facing_up: Add LICENSE", "Actual value: {}".format(lines[0]))
+		self.assertEqual(lines[0],
+							"* :page_facing_up: Add LICENSE",
+							"Actual value: {}".format(lines[0]))
 	
 	def test_lorem(self):
 		output = commity_repo(self.test_repo_dir, "lorem")
@@ -45,8 +50,12 @@ class CommityTest(unittest.TestCase):
 		lines = list(filter(lambda s: len(s) > 0, lines))
 		
 		self.assertEqual(len(lines), 2, "Expected 2 lines.\nLines: {}".format(lines))
-		self.assertEqual(lines[0], "* :sparkles: Add more lorem!", "Actual value: {}".format(lines[0]))
-		self.assertEqual(lines[1], "* :sparkles: Add lorem", "Actual value: {}".format(lines[1]))
+		self.assertEqual(lines[0],
+							"* :sparkles: Add more lorem!",
+							"Actual value: {}".format(lines[0]))
+		self.assertEqual(lines[1],
+							"* :sparkles: Add lorem",
+							"Actual value: {}".format(lines[1]))
 
 if __name__ == '__main__':
 	unittest.main()
