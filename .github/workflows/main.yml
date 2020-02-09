@@ -7,9 +7,11 @@ jobs:
     runs-on: ubuntu-18.04
     name: Check that the source code is correctly formatted.
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Run YAPF
+        uses: ./
         id: yapf
-        uses: actions/commity@v1
         with:
           command: 'lint'
       # Print the output from the `yapf` step
