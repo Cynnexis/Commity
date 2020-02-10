@@ -12,18 +12,27 @@ pull-requests templates in BitBucket.
 
 You need [Python 3.7][python 3.7] to execute this script.
 
-Here is a list of Python package to install to make this program
-works:
+Here is the command to install all necessary packages:
+
+With pip:
 
 ```bash
-pip install typeguard
-pip install gitpython
+pip install --no-cache-dir -r requirements.txt
+```
+
+With conda (and its environment):
+
+```bash
+conda install --name myenv -c conda-forge --file requirements.txt
 ```
 
 ### Installing
 
 To install this script, you first need to clone this project, and
 then execute [`commity.py`](https://github.com/Cynnexis/Commity/blob/master/commity.py).
+
+> Note that if you want to change the source code of the project, you will need to run `yarn` in order to install the
+> NPM modules. `Husky` is the module that help format the code using YAPF at each pre-commit.
 
 ### Usage
 
@@ -40,11 +49,43 @@ given file. If the file is invalid, or no file is given, stdout is used instead.
 
 `python commity.py -r C:\Users\Foo\MyProject -b feat/gui-buttons -o output.txt`
 
+#### Run with Docker 🐳
+
+It is possible to run `commity` from the given `Dockerfile`. Note that this method
+is not optimized for this kind of usage, and is relatively long to execute, as you
+will certainly have to build the image. Nevertheless, it is a good method if you
+don't want to install Python and/or the required modules.
+
+To execute `commity` using docker, please refer to the example below:
+
+```bash
+cd path/to/commity
+docker build -t cynnexis/commity .
+docker run -it -v "C:\Users\Foo\myproject:/myproject" cynnexis/commity run -r /myproject -b master -o /myproject/commity-output.txt
+```
+
+**Explanation:**
+
+1. The first command is to move to the project repository.
+2. Build the image, and name it "`cynnexis/commity`"
+3. This command is the more complex one. It runs a container (`docker run -it`),
+create a volume between your project on your host (your machine) and its copy
+in the container (`-v "C:\Users\Foo\myproject:/myproject"`). Please replace the
+first part with your project path on your host, and the second part with your
+project name (with the `/` at the beginning). Then, the image name is specified
+(`cynnexis/commity`), and the arguments are passed. After `run`, you can put any
+arguments for `commity.py`. Make sure to replace `myproject` with your project
+name again. If the command is successfully executed, you'll find the file
+`commity-output.txt` under your project name on your host.
+
 ## Built With
 
 * [Python 3.7][python 3.7]
 * [typeguard][typeguard]
 * [GitPython][gitpython]
+* [GitHub Actions][githubactions]
+* [YAPF][yapf]
+* [Husky][husky]
 
 ## Contributing
 
@@ -76,6 +117,9 @@ to have written the monstrous regex to match branch name.
 [python 3.7]: https://www.python.org/downloads/release/python-374/
 [typeguard]: https://pypi.org/project/typeguard/
 [gitpython]: https://gitpython.readthedocs.io/en/stable/index.html
+[githubactions]: https://github.com/features/actions
+[yapf]: https://github.com/google/yapf
+[husky]: https://github.com/typicode/husky
 [shield-language]: https://img.shields.io/badge/language-python-yellow.svg
 [shield-license]: https://img.shields.io/badge/license-GPL-blue.svg
 [shield-python-version]: https://img.shields.io/badge/python-3.7-yellow.svg
