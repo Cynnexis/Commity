@@ -1,12 +1,34 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="1">
+            <item index="0" class="java.lang.String" itemvalue="networkx" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
     <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
         <list>
+          <option value="E101" />
+          <option value="E114" />
+          <option value="E115" />
+          <option value="E116" />
+          <option value="E121" />
+          <option value="E128" />
+          <option value="E251" />
+          <option value="E265" />
+          <option value="E266" />
+          <option value="E3" />
           <option value="E501" />
-          <option value="E302" />
-          <option value="E305" />
+          <option value="E711" />
+          <option value="E712" />
+          <option value="E713" />
+          <option value="E714" />
+          <option value="W191" />
         </list>
       </option>
     </inspection_tool>

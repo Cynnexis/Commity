@@ -45,7 +45,7 @@ pip install --no-cache-dir -r requirements.txt
 #                       * commit 1 (master)
 #                             🎉 First commit
 
-cd ~
+cd /
 mkdir git-test-repo
 cd git-test-repo
 TEST_REPO=$(pwd)
@@ -81,7 +81,7 @@ git add .
 git commit -m ":pencil: Add more content in Getting Started"
 # Merge (conserve branch)
 git checkout master
-git merge getting-started
+git merge getting-started --no-ff
 
 # Create new branch
 git checkout -b license
@@ -108,3 +108,6 @@ git add .
 git commit -m ":sparkles: Add more lorem!"
 # Go back to master
 git checkout master
+
+# Copy bashrc to root, for a constant source
+cp -f ~/.bashrc /.bashrc
