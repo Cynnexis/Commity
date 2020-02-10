@@ -16,7 +16,8 @@ exit_code=0
 # Parse command
 if [ $command == "run" ]
 then
-  output=$(python commity.py -r ~/git-test-repo -b getting-started)
+  echo "${@:2}"
+  output=$(python commity.py "${@:2}")
   exit_code=$?
 elif [ $command == "lint" ]
 then
@@ -30,6 +31,9 @@ elif [ $command == "test" ]
 then
   output=$(python -m unittest test/commity-test.py)
   exit_code=$?
+else
+  echo -e "Couldn't interpret command '$command'.\All arguments: $*"
+  exit 1
 fi
 
 echo ::set-output name=output::$output
