@@ -23,4 +23,4 @@ services:
       - 'D:\Workspace\PycharmProjects\Commity:/root/commity'
     environment:
       - DEBUG=True
-    command: bash -c "source ~/.bashrc && python -m unittest ~/commity/test/commity-test.py"
+    entrypoint: bash -c "source ~/.bashrc && python -m unittest ~/commity/test/commity-test.py"

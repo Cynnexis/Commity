@@ -13,12 +13,19 @@ touch ~/.bashrc
 pip install --no-cache-dir -r requirements.txt
 
 # Add default git repo for testing
+#                            * commit 11 (change-first-lorem-paragraph)
+#                            |     📝 Update first paragraph of lorem text
+#                            |
+#        commit 10 (lorem) * |
+#          Add lorem again | |
+#                          | /
+#                          |/
 #                       |  * commit 9 (lorem)
-#                       |  |     ✨ Add more lorem!
+#                          |     ✨ Add more lorem!
 #                       |  |
-#                       |  * commit 8 (lorem)
+#                          * commit 8 (lorem)
 #                       |  |     ✨ Add lorem
-#                       | /
+#                         /
 #                       |/
 #                       |
 #                       * commit 7 (master)
@@ -101,11 +108,30 @@ echo "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod te
 # Commit
 git add .
 git commit -m ":sparkles: Add lorem"
-# Add more lipsum
+# Add more lorem
 echo "Pretium lectus quam id leo in vitae turpis massa." >> lorem.txt
 # Commit
 git add .
 git commit -m ":sparkles: Add more lorem!"
+
+# Create new branch on lorem
+git checkout -b change-first-lorem-paragraph
+
+# Come back to lorem and commit new lorem
+git checkout lorem
+echo "Ac tincidunt vitae semper quis lectus nulla at." >> lorem.txt
+# Commit
+git add .
+git commit -m ":sparkles: Add lorem again!"
+
+# Go to branch created before and commit
+git checkout change-first-lorem-paragraph
+new_content="Lorem ipsum dolor sit amet."
+sed -i "1s/.*/$new_content/" lorem.txt
+# Commit
+git add .
+git commit -m ":pencil: Update first paragraph of lorem text"
+
 # Go back to master
 git checkout master
 

@@ -50,8 +50,12 @@ def commity_repo(repo: Optional[str] = None,
 			if c not in graph:
 				graph.add_node(c)
 			for parent in c.parents:
+				if parent not in graph:
+					graph.add_node(parent)
 				if not graph.has_edge(parent, c):
 					graph.add_edge(parent, c, weight=c.stats.total["lines"])
+	
+	dlog("Number of commits: {}", graph.number_of_nodes())
 	
 	# Draw the graph if in debug mode
 	if DEBUG:
@@ -59,14 +63,20 @@ def commity_repo(repo: Optional[str] = None,
 			import matplotlib.pyplot as plt
 			nx.draw(
 				graph,
-				labels={c: c.summary for c in graph},
+				labels={
+					c: re.sub(r":[a-zA-Z0-9\-+_]+:\s*",
+								'',
+								c.summary) for c in graph
+				},
 				node_size=400,
 				font_size=16,
 				font_color='r',
 				pos=nx.spring_layout(graph,
 										k=0.15,
 										iterations=20))
-			plt.savefig("graph.png")
+			plt.savefig("{}.ignore.png".format(
+				os.path.basename(os.path.normpath(repo.working_dir)).replace(' ',
+																				'-')))
 		except ImportError:
 			pass
 	
