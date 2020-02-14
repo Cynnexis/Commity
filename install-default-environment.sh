@@ -1,5 +1,7 @@
 #!/bin/bash
 
+WORKSPACE_DIR=$(pwd)
+
 # Update APT packages list
 apt-get update -qq
 apt-get upgrade -qq
@@ -58,8 +60,8 @@ cd git-test-repo
 TEST_REPO=$(pwd)
 DEBUG="True"
 echo -e "TEST_REPO=$TEST_REPO\nDEBUG=$DEBUG" >> /etc/environment
-echo -e "export TEST_REPO=$TEST_REPO\nexport DEBUG=$DEBUG" >> ~/.bashrc
-source ~/.bashrc
+echo -e "export TEST_REPO=$TEST_REPO\nexport DEBUG=$DEBUG" >> /.bashrc
+source /.bashrc
 
 # Add README in repo
 echo "# git-test-repo" > README.md
@@ -135,5 +137,8 @@ git commit -m ":pencil: Update first paragraph of lorem text"
 # Go back to master
 git checkout master
 
-# Copy bashrc to root, for a constant source
-cp -f ~/.bashrc /.bashrc
+# Go back to workspace
+cd $WORKSPACE_DIR
+
+# Copy bashrc to current user (root)
+cp -f /.bashrc ~/.bashrc

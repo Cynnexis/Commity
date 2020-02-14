@@ -112,6 +112,9 @@ there!)
 * [Joey](https://stackoverflow.com/users/73070/joey) from
 [this stackoverflow post](https://stackoverflow.com/a/12093994/7347145),
 to have written the monstrous regex to match branch name.
+* [NIKHIL C M](https://stackoverflow.com/users/3599013/nikhil-c-m) and
+[Joe Chrysler](https://stackoverflow.com/users/361494/joe-chrysler) from
+[this stackoverflow post](https://stackoverflow.com/a/52025740/7347145) for the git command to get a branch parent.
 * Git team ; what a flawless system they created!
 
 [python 3.7]: https://www.python.org/downloads/release/python-374/

@@ -48,10 +48,16 @@ class CommityTest(unittest.TestCase):
 		self.assertEqual(
 			len(lines),
 			len(expected_lines),
-			"Expected {} lines.\nLines: {}".format(len(expected_lines),
-													lines))
+			"Expected {} lines.\nExpected lines:\n\t{}\nGot lines:\n\t{}".format(
+				len(expected_lines),
+				'\n\t'.join(expected_lines),
+				'\n\t'.join(lines)))
 		for i, line in enumerate(lines):
-			self.assertEqual(line, expected_lines[i], "Actual value: {}".format(line))
+			self.assertEqual(
+				line,
+				expected_lines[i],
+				"Expected: \"{}\"\nGot: \"{}\"".format(expected_lines[i],
+														line))
 
 if __name__ == '__main__':
 	unittest.main()
