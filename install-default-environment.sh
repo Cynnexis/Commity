@@ -15,19 +15,30 @@ touch ~/.bashrc
 pip install --no-cache-dir -r requirements.txt
 
 # Add default git repo for testing
-#                            * commit 11 (change-first-lorem-paragraph)
-#                            |     📝 Update first paragraph of lorem text
-#                            |
-#        commit 10 (lorem) * |
-#          Add lorem again | |
-#                          | /
-#                          |/
-#                       |  * commit 9 (lorem)
-#                          |     ✨ Add more lorem!
+#                       |
+#                       * commit 14 (HEAD -> master)
+#                       |\    🔀 Merge branch 'acknowledgements' onto master
+#                       | \
+#    commit 13 (master) *  |
+#        Add .gitignore |  |
 #                       |  |
-#                          * commit 8 (lorem)
+#                       |  * commit 12 (acknowledgements)
+#                       |  |     ✨ Add Acknowledgements.txt
+#                       | /
+#                       |/
+#                       |    * commit 11 (change-first-lorem-paragraph)
+#                       |    |     📝 Update first paragraph of lorem text
+#                       |    |
+#                       |  * | commit 10 (lorem)
+#                       |  | |     ✨ Add lorem again
+#                       |  | /
+#                       |  |/
+#                       |  * commit 9 (lorem)
+#                       |  |     ✨ Add more lorem!
+#                       |  |
+#                       |  * commit 8 (lorem)
 #                       |  |     ✨ Add lorem
-#                         /
+#                       | /
 #                       |/
 #                       |
 #                       * commit 7 (master)
@@ -134,8 +145,27 @@ sed -i "1s/.*/$new_content/" lorem.txt
 git add .
 git commit -m ":pencil: Update first paragraph of lorem text"
 
-# Go back to master
+# Checkout on master
 git checkout master
+
+# Create new banch "acknowledgements"
+git checkout -b acknowledgements
+# Add Acknowledgements.txt
+echo -e "Acknowledgements\n" > Acknowledgements.txt
+# Commit
+git add .
+git commit -m ":sparkles: Add Acknowledgements.txt"
+
+# Checkout on master
+git checkout master
+# Create .gitignore
+echo "*~" > .gitignore
+# Commit
+git add .
+git commit -m ":see_no_evil: Add .gitignore"
+
+# Merge "acknowledgements" (conserve branch)
+git merge acknowledgements --no-ff -m ":twisted_rightwards_arrows: Merge branch 'acknowledgements' onto master"
 
 # Go back to workspace
 cd $WORKSPACE_DIR

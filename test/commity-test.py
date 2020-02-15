@@ -19,6 +19,8 @@ class CommityTest(unittest.TestCase):
 		self.check_lines(
 			"master",
 			[
+				"* :twisted_rightwards_arrows: Merge branch 'acknowledgements' onto master",
+				"* :see_no_evil: Add .gitignore",
 				"* :pencil: Update README",
 				"* :twisted_rightwards_arrows: Merge branch 'getting-started' onto master",
 				"* :pencil: Add description",

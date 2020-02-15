@@ -228,8 +228,9 @@ def commity_repo(repo_path: Optional[str] = None,
 			commits.append(commit)
 			if len(commit.parents) > 1:
 				dlog(
-					"WARNING: Ignoring potential commits on main branch. Preferring fetching commits in feature branch."
-				)
+					"WARNING: Ignoring potential commits on current branch \"{}\". Preferring fetching commits in feature branch \"{}\".",
+					b,
+					graph.nodes[commit.parents[-1]]["branch"])
 			commit = commit.parents[
 				-1] # TODO, Take the other commits to, with a DFS Traversal Algorithm
 		commits.append(commit)
