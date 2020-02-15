@@ -29,9 +29,11 @@
           <option value="E713" />
           <option value="E714" />
           <option value="W191" />
+          <option value="E124" />
         </list>
       </option>
     </inspection_tool>
+    <inspection_tool class="PyShadowingNamesInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="ShellCheck" enabled="true" level="ERROR" enabled_by_default="true">
       <shellcheck_settings value="SC2086,SC2103,SC2164" />
     </inspection_tool>

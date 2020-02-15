@@ -37,7 +37,7 @@ pip install --no-cache-dir -r requirements.txt
 #                     \ |
 #                      \|
 #                       * commit 5 (HEAD -> master)
-#                       |\    Merge getting-started -> master
+#                       |\    🔀 Merge branch 'getting-started' onto master
 #                       | \
 #                       |  |
 #                       |  * commit 4 (getting-started)
@@ -90,7 +90,7 @@ git add .
 git commit -m ":pencil: Add more content in Getting Started"
 # Merge (conserve branch)
 git checkout master
-git merge getting-started --no-ff
+git merge getting-started --no-ff -m ":twisted_rightwards_arrows: Merge branch 'getting-started' onto master"
 
 # Create new branch
 git checkout -b license

@@ -22,7 +22,7 @@ reflog_pattern = re.compile(
 	re.MULTILINE | re.IGNORECASE)
 
 @typechecked
-def commity_repo(repo: Optional[str] = None,
+def commity_repo(repo_path: Optional[str] = None,
 					branch: Optional[str] = None,
 					output: Optional[str] = None) -> str:
 	global log_buffer
@@ -35,40 +35,52 @@ def commity_repo(repo: Optional[str] = None,
 	branch_graph = nx.DiGraph()
 	
 	# If no repo has been given, take the current directory
-	if repo is None:
-		repo = os.path.dirname(os.path.realpath(__file__))
+	if repo_path is None:
+		repo_path = os.path.dirname(os.path.realpath(__file__))
+	
+	if os.name.strip().lower() == "nt":
+		repo_path = repo_path.replace('\\', '/')
+	else:
+		repo_path = os.path.normpath(repo_path)
 	
 	# Get the repo
 	try:
-		repo = git.Repo(repo)
+		repo = git.Repo(repo_path)
 	except git.exc.InvalidGitRepositoryError:
-		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo),
+		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo_path),
 			output=output)
-		exit(-1)
+		exit(1)
 	
 	# noinspection PyUnboundLocalVariable
 	if repo.bare:
 		log("ERROR: The given repository is bare.", output=output)
-		exit(-2)
+		exit(2)
 	
 	if repo.currently_rebasing_on() is not None:
 		log("ERROR: The given repo is being rebased.")
-		exit(-3)
+		exit(3)
 	
 	if repo.is_dirty():
 		log("ERROR: The given repo is dirty.")
-		exit(-4)
+		exit(4)
+	
+	if branch not in repo.branches:
+		log("ERROR: The branch \"{}\" does not exist.\nAvailable branch: {}".format(
+			branch,
+			', '.join(repo.branches)),
+			output=output)
+		exit(5)
 	
 	# Fill graph
 	for b in repo.branches:
-		for c in repo.iter_commits(rev=b.name):
-			if c not in graph:
-				graph.add_node(c, branch=None)
-			for parent in c.parents:
+		for commit in repo.iter_commits(rev=b.name):
+			if commit not in graph:
+				graph.add_node(commit, branch=None)
+			for parent in commit.parents:
 				if parent not in graph:
 					graph.add_node(parent, branch=None)
-				if not graph.has_edge(parent, c):
-					graph.add_edge(parent, c, weight=c.stats.total["lines"])
+				if not graph.has_edge(parent, commit):
+					graph.add_edge(parent, commit, weight=commit.stats.total["lines"])
 	
 	dlog("Number of commits: {}", graph.number_of_nodes())
 	
@@ -92,20 +104,23 @@ def commity_repo(repo: Optional[str] = None,
 										k=0.15,
 										iterations=20))
 			fig.savefig("{}.ignore.png".format(
-				os.path.basename(os.path.normpath(repo.working_dir)).replace(' ',
-																				'-')))
+				os.path.basename(repo_path).replace(' ',
+													'-')))
 			plt.close(fig)
 		except ImportError:
 			pass
 	
 	# Create the branch graph
 	# Source code inspired from https://stackoverflow.com/questions/3161204/how-to-find-the-nearest-parent-of-a-git-branch
-	branch_graph.add_nodes_from(list(map(lambda b: b.name, repo.branches)))
+	branch_graph.add_nodes_from(
+		list(map(lambda b: b.name,
+					repo.branches)),
+		merged=False)
 	dlog("Branches in graph: {}", branch_graph.nodes)
 	get_branch_parent_command = [
 		"bash",
 		"-c",
-		"cd " + os.path.normpath(repo.working_dir) +
+		"cd " + repo_path +
 		" && git show-branch --no-color | grep '*' | grep -v \"$(git rev-parse --abbrev-ref HEAD)\" | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//'"
 	]
 	for b in repo.branches:
@@ -113,15 +128,38 @@ def commity_repo(repo: Optional[str] = None,
 		if checked_branch.name != b.name:
 			log("ERROR: Cannot checkout in the repo \"{}\". Please check that you have the permission to checkout, and that your repo is not clean."
 				)
-			exit(-5)
+			exit(6)
+		del checked_branch
+		
+		# Check if branch is merged by looking at the number of parent of the first commit
+		
+		# If the most recent commit of the given branch is a merge commit (commit with multiple parents), or if the
+		# commit right after the most recent commit is a merge commit, then the branch is merged.
+		
+		# If the branch contains at least one commit and...
+		if len(list(repo.iter_commits(rev=b.name))) > 0 and (
+			# ... the most recent commit of the branch has 2 parents or more (merge commit) OR...
+			len(list(repo.iter_commits(rev=b.name))[0].parents) > 1 or
+			# ... the most recent commit has one successor and...
+			(
+				len(list(graph.successors(list(repo.iter_commits(rev=b.name))[0]))) == 1
+				and
+				# ... the successor is a merge commit (has 2 parents or more)
+				len(
+					list(
+						list(graph.successors(list(
+							repo.iter_commits(rev=b.name))[0]))[0].parents)) > 1)):
+			# then the branch is merged
+			dlog("Branch {} is merged.", b.name)
+			branch_graph.nodes[b.name]["merged"] = True
+		
 		result = subprocess.run(get_branch_parent_command, stdout=subprocess.PIPE)
 		result = re.sub(r"\r?\n", '', result.stdout.decode("utf-8").replace('\r', ''))
 		if result is not None and result != '':
 			if result not in branch_graph.nodes:
 				dlog(
-					"WARNING: Parent branch \"{}\" is not a valid branch in the given repo. Ignoring this result.\n Available branches: {}",
-					result,
-					', '.join(branch_graph.nodes))
+					"WARNING: Parent branch \"{}\" is not a valid branch in the given repo. Ignoring this result.",
+					result)
 			else:
 				# If a branch is the parent of "master", it means it was merged on master
 				if b.name == "master":
@@ -150,69 +188,83 @@ def commity_repo(repo: Optional[str] = None,
 				font_size=16,
 				font_color='r')
 			fig.savefig("{}-branches.ignore.png".format(
-				os.path.basename(os.path.normpath(repo.working_dir)).replace(' ',
-																				'-')))
+				os.path.basename(repo_path).replace(' ',
+													'-')))
 			plt.close(fig)
 		except ImportError:
 			pass
 	
 	# Parse the graph and add the branch of commits as attribute
-	# Apply a reverse depth-first search to label the children branches, and then go back to master
-	for b in reversed(list(nx.dfs_edges(branch_graph, "master"))):
-		b = b[0]
-		for c in repo.iter_commits(rev=b):
-			graph.nodes[c]["branch"] = b
-		# if b.name == "master":
-		# 	continue
-		# num_iter = 0
-		# is_merged_branch = False
-		# for c in repo.iter_commits(rev=b.name):
-		# 	# Is it a merged branch?
-		# 	if num_iter == 0 and graph.nodes[c]["branch"] is not None and graph.nodes[c]["branch"] != '' and graph.nodes[c]["branch"] != b.name:
-		# 		# If the first commit of a branch is already tagged, it means this branch has been merged. We need to rewrite the attribute
-		# 		is_merged_branch = True
-		#
-		# 	if (graph.nodes[c]["branch"] is None or graph.nodes[c]["branch"] == '') or (is_merged_branch and len(list(graph.successors(c))) <= 1):
-		# 		graph.nodes[c]["branch"] = b.name
-		# 	elif is_merged_branch and len(list(graph.successors(c))) > 1:
-		# 		# If the source of the merged branch is found, stop here
-		# 		break
-		# 	num_iter += 1
+	# Construct reverse-DNF list, that go from leafs to root
+	reversed_dnf = []
+	dnf_buffer = []
+	original_dfs = nx.dfs_edges(branch_graph, "master")
+	for edge in original_dfs:
+		if len(dnf_buffer) == 0 or (len(dnf_buffer) > 0 and edge[0] != "master"):
+			dnf_buffer.append(edge)
+		else:
+			reversed_dnf.extend(list(reversed(dnf_buffer)))
+			dnf_buffer.clear()
+			dnf_buffer.append(edge)
+	if len(dnf_buffer) > 0:
+		reversed_dnf.extend(list(reversed(dnf_buffer)))
+	del dnf_buffer
+	del original_dfs
+	# Select only the second element of all tuples in the list (thus, master will be removed from the list)
+	reversed_dnf = list(map(lambda edge: edge[1], reversed_dnf))
+	# Add master at the end of the list
+	reversed_dnf.append("master")
 	
-	# for b in repo.branches:
-	# 	for c in repo.iter_commits(rev=b.name):
-	# 		if graph.nodes[c]["branch"] is None or graph.nodes[c]["branch"] == '':
-	# 			branch_name = get_head_name_from_commit(c)
-	# 			graph.nodes[c]["branch"] = branch_name
-	# 			dlog("Commit \"{}\" is on branch \"{}\"\tname_rev=\"{}\"", c.summary, branch_name, c.name_rev)
-	
-	# reflogs = []
-	# str_reflogs = result.stdout.decode("utf-8").replace('\r', '').split('\n')
-	# for str_reflog in str_reflogs:
-	# 	matches = list(re.finditer(reflog_pattern, str_reflog))
-	# 	if len(matches) != 1:
-	# 		dlog("The reflog line:\n{}\n... couldn't be parsed using regex. Number of matches: {}", str_reflog, len(matches))
-	# 		continue
-	# 	match = matches[0]
-	# 	reflogs.append({
-	# 		"hash": match.group(1),
-	# 		"ref": match.group(2),
-	# 		"action": match.group(5),
-	# 		"message": match.group(6),
-	# 	})
-	# # Remove entries that are not related to branches and commits
-	# # See https://regex101.com/r/I16vv5/1/
-	# reflogs = filter(lambda reflog: not reflog["ref"].startswith("HEAD@{"), reflogs)
+	# Apply a reverse depth-first search to label the children branches, and then go back to master (do not parse master)
+	dlog("Parsing {}", reversed_dnf)
+	for b in reversed_dnf:
+		is_parsing_merged_branch = False
+		do_not_fall_back_in_merged_mode = False
+		# Construct the list of commits to iterate (take the last parent each time, see https://stackoverflow.com/a/46455760/7347145)
+		commits = []
+		most_recent_commit = next(repo.iter_commits(rev=b))
+		commit = most_recent_commit
+		while len(commit.parents) > 0:
+			commits.append(commit)
+			if len(commit.parents) > 1:
+				dlog(
+					"WARNING: Ignoring potential commits on main branch. Preferring fetching commits in feature branch."
+				)
+			commit = commit.parents[
+				-1] # TODO, Take the other commits to, with a DFS Traversal Algorithm
+		commits.append(commit)
+		del most_recent_commit, commit
+		
+		for commit in commits:
+			# If the current commit has the name of a branch that is not `b` and that is tagged as "merged", ignore it and enter in "merge mode"
+			if not is_parsing_merged_branch and not do_not_fall_back_in_merged_mode and graph.nodes[
+				commit]["branch"] not in [
+					None,
+					'',
+					b
+				] and branch_graph.nodes[graph.nodes[commit]["branch"]]["merged"]:
+				is_parsing_merged_branch = True
+			# Stop considering branch as merged if the current commit is a merge commit and the branch we analyse is merged
+			elif is_parsing_merged_branch and len(list(graph.successors(commit))) > 1:
+				is_parsing_merged_branch = False
+				do_not_fall_back_in_merged_mode = True
+			
+			if not is_parsing_merged_branch:
+				# if DEBUG and graph.nodes[commit]["branch"] is not None and graph.nodes[
+				# 	commit]["branch"] != '':
+				# 	dlog(
+				# 		"WARNING: Overwriting previous commit label:\n\tCommit:    {}\n\tOld label: {}\n\tNew label: {}",
+				# 		commit.summary,
+				# 		graph.nodes[commit]["branch"],
+				# 		b)
+				
+				graph.nodes[commit]["branch"] = b
 	
 	# If no branch has been given, take the current branch (it might be `master`)
 	if branch is None:
 		branch = repo.active_branch.name
 	
 	dlog("Analysing branch \"{}\"", branch)
-	
-	if branch not in repo.branches:
-		log("The branch \"{}\" does not exist.".format(branch), output=output)
-		exit(-3)
 	
 	# If an output has been given and the file already exist, remove it:
 	if output is not None and os.path.exists(output) and os.path.isfile(output):

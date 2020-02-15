@@ -15,6 +15,16 @@ class CommityTest(unittest.TestCase):
 		print("Does {} exists?".format(self.test_repo_dir))
 		self.assertTrue(os.path.exists(self.test_repo_dir))
 	
+	def test_master(self):
+		self.check_lines(
+			"master",
+			[
+				"* :pencil: Update README",
+				"* :twisted_rightwards_arrows: Merge branch 'getting-started' onto master",
+				"* :pencil: Add description",
+				"* :tada: First commit"
+			])
+	
 	def test_getting_started(self):
 		self.check_lines("getting-started",
 							[
