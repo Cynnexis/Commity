@@ -155,15 +155,18 @@ def commity_repo(repo_path: Optional[str] = None,
 			dlog("Branch {} is merged.", b.name)
 			branch_graph.nodes[b.name]["merged"] = True
 			
-			result = get_branch_parent_from_merged_branched(repo, b.name)
+			result = get_branch_parent_from_merged_branched(repo, repo_path, b.name)
 			if result is not None:
 				could_find_parent = True
-				dlog("New branch dependency: {} -> {}", b.name, result)
+				dlog("New branch dependency: {} -> {}", result, b.name)
 				branch_graph.add_edge(result, b.name)
 		
 		if not could_find_parent:
 			result = subprocess.run(get_branch_parent_command, stdout=subprocess.PIPE)
-			result = re.sub(r"\r?\n", '', result.stdout.decode("utf-8").replace('\r', ''))
+			result = re.sub(r"\r?\n",
+							'',
+							result.stdout.decode("utf-8").replace('\r',
+																	''))
 			if result is not None and result != '':
 				if result not in branch_graph.nodes:
 					dlog(
@@ -172,7 +175,9 @@ def commity_repo(repo_path: Optional[str] = None,
 				else:
 					# If a branch is the parent of "master", it means it was merged on master
 					if b.name == "master":
-						dlog("New branch dependency: {} -> {}\t(inverted)", b.name, result)
+						dlog("New branch dependency: {} -> {}\t(inverted)",
+								b.name,
+								result)
 						branch_graph.add_edge(b.name, result)
 					else:
 						dlog("New branch dependency: {} -> {}", result, b.name)
@@ -257,14 +262,6 @@ def commity_repo(repo_path: Optional[str] = None,
 				do_not_fall_back_in_merged_mode = True
 			
 			if not is_parsing_merged_branch:
-				# if DEBUG and graph.nodes[commit]["branch"] is not None and graph.nodes[
-				# 	commit]["branch"] != '':
-				# 	dlog(
-				# 		"WARNING: Overwriting previous commit label:\n\tCommit:    {}\n\tOld label: {}\n\tNew label: {}",
-				# 		commit.summary,
-				# 		graph.nodes[commit]["branch"],
-				# 		b)
-				
 				graph.nodes[commit]["branch"] = b
 	
 	# If no branch has been given, take the current branch (it might be `master`)
@@ -319,22 +316,32 @@ def log(values: Any = '',
 		print(values, end=end, flush=flush)
 
 @typechecked
-def get_branch_parent_from_merged_branched(repo: git.Repo, branch_name: str) -> Optional[str]:
+def get_branch_parent_from_merged_branched(repo: git.Repo,
+											repo_path: str,
+											branch_name: str) -> Optional[str]:
 	"""
 	Get the branch parent from `branch_name`. This method works only if the given branch is merged. If not, the function
 	will return `None`.
 	:param repo: The git repo.
+	:param repo_path: The path to the git repo.
 	:param branch_name: The branch name.
 	:return: Return the name of the branch parent if the given branch name is merged onto the parent. Otherwise `None`.
 	"""
-	if not checkout_on_branch(repo, branch_name):
+	if not checkout_on_branch(repo, "master"):
 		return None
 	
 	result: subprocess.CompletedProcess = subprocess.run(
-		["bash", "-c", "git branch --contains " + branch_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		["bash",
+			"-c",
+			"cd " + repo_path + " && git branch --contains " + branch_name],
+		stdout=subprocess.PIPE,
+		stderr=subprocess.STDOUT)
 	
-	if result is None or (result.stderr is not None and result.stderr.decode("utf-8").startswith("error: malformed object name ")):
-		dlog("WARNING: branch name {} not found in \"git branch --contains ...\"", branch_name)
+	if result is None or (
+		result.stdout is not None and
+		result.stdout.decode("utf-8").startswith("error: malformed object name ")):
+		dlog("WARNING: branch name {} not found in \"git branch --contains ...\"",
+				branch_name)
 		return None
 	
 	matches = list(re.finditer(branch_parent_pattern, result.stdout.decode("utf-8")))
@@ -360,6 +367,9 @@ def checkout_on_branch(repo: git.Repo, branch_name: str) -> bool:
 	:param branch_name: The branch.
 	:return: Return `True` if the branch has been found, `False` otherwise.
 	"""
+	if repo.active_branch == branch_name:
+		return True
+	
 	# Checkout on the given branch
 	for b in repo.branches:
 		if b.name == branch_name:
