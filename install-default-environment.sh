@@ -26,11 +26,11 @@ pip install --no-cache-dir -r requirements.txt
 #                       |  |     ✨ Add Acknowledgements.txt
 #                       | /
 #                       |/
-#                       |    * commit 11 (change-first-lorem-paragraph)
-#                       |    |     📝 Update first paragraph of lorem text
-#                       |    |
-#                       |  * | commit 10 (lorem)
-#                       |  | |     ✨ Add lorem again
+#                       |     * commit 11 (change-first-lorem-paragraph)
+#                       |     |     📝 Update first paragraph of lorem text
+#                       |     |
+#                       |  *  | commit 10 (lorem)
+#                       |  |  |     ✨ Add lorem again
 #                       |  | /
 #                       |  |/
 #                       |  * commit 9 (lorem)
@@ -47,7 +47,7 @@ pip install --no-cache-dir -r requirements.txt
 #   Add LICENSE      |  |
 #                     \ |
 #                      \|
-#                       * commit 5 (HEAD -> master)
+#                       * commit 5 (HEAD -> master) (no fast-forward)
 #                       |\    🔀 Merge branch 'getting-started' onto master
 #                       | \
 #                       |  |
