@@ -6,13 +6,10 @@ from typing import Optional, Union, Tuple, Any
 import git
 from typeguard import typechecked
 
-log_buffer = ""
-
 
 @typechecked
-def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, output: Optional[str] = None) -> str:
-	global log_buffer
-	log_buffer = ""
+def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None) -> str:
+	content = ""
 	
 	# If no repo has been given, take the current directory
 	if repo_path is None:
@@ -40,22 +37,20 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, 
 		raise git.exc.GitError("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
 			branch, plural(repo.branches, plural="es"), ', '.join(map(lambda b: b.name, repo.branches))))
 	
-	# If an output has been given and the file already exist, remove it:
-	if output is not None and os.path.exists(output) and os.path.isfile(output):
-		os.remove(output)
-	
-	log("On branch " + branch, end="\n\n", output=output)
+	content = f"On branch {branch}\n\n"
 	
 	# Get the list of all commits from the given branch
 	for i, commit in enumerate(repo.iter_commits(rev=branch)):
 		# Print the commit
 		if i == 0 or len(commit.parents) <= 1:
-			log(beautify_commit(commit), output=output)
+			content += beautify_commit(commit) + '\n'
 		else:
 			break
 	
+	print(content)
+	
 	repo.close()
-	return log_buffer
+	return content
 
 
 @typechecked
@@ -68,28 +63,6 @@ def plural(number: Union[int, collections.abc.Iterable], singular: str = '', plu
 		return plural
 	else:
 		return singular
-
-
-@typechecked
-def log(values: Any = '',
-		output: Optional[str] = None,
-		mode: str = 'a',
-		encoding: str = "utf-8",
-		end='\n',
-		flush: bool = True,
-		*args):
-	global log_buffer
-	log_buffer += values + end
-	if isinstance(values, str) and args is not None and len(args) > 0:
-		values = values.format(*args)
-	if output is not None:
-		try:
-			f = open(output, mode=mode, encoding=encoding)
-			f.write(values + end)
-		except OSError:
-			print(values, end=end, flush=flush)
-	else:
-		print(values, end=end, flush=flush)
 
 
 @typechecked
