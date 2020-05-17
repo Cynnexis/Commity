@@ -21,17 +21,17 @@ class CommityTest(unittest.TestCase):
 			[
 				"* :twisted_rightwards_arrows: Merge branch 'acknowledgements' onto master",
 				"* :see_no_evil: Add .gitignore",
-				"* :pencil: Update README",
-				"* :twisted_rightwards_arrows: Merge branch 'getting-started' onto master",
-				"* :pencil: Add description",
-				"* :tada: First commit"
+				"* :sparkles: Add Acknowledgements.txt",
+				"* :pencil: Update README"
 			])
 	
 	def test_getting_started(self):
 		self.check_lines("getting-started",
 							[
 								"* :pencil: Add more content in Getting Started",
-								"* :pencil: Add Getting Started section"
+								"* :pencil: Add Getting Started section",
+								"* :pencil: Add description",
+								"* :tada: First commit"
 							])
 	
 	def test_license(self):
@@ -42,12 +42,18 @@ class CommityTest(unittest.TestCase):
 							[
 								"* :sparkles: Add lorem again!",
 								"* :sparkles: Add more lorem!",
-								"* :sparkles: Add lorem"
+								"* :sparkles: Add lorem",
+								"* :pencil: Update README"
 							])
 	
 	def test_change_first_lorem_paragraph(self):
 		self.check_lines("change-first-lorem-paragraph",
-							"* :pencil: Update first paragraph of lorem text")
+							[
+								"* :pencil: Update first paragraph of lorem text",
+								"* :sparkles: Add more lorem!",
+								"* :sparkles: Add lorem",
+								"* :pencil: Update README"
+							])
 	
 	def check_lines(self, branch: str, expected_lines: Union[List[str], str]):
 		if isinstance(expected_lines, str):
