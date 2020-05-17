@@ -10,6 +10,7 @@ services:
     image: cynnexis/commity
     volumes:
       - 'D:\Workspace\PycharmProjects\Commity:/root/commity'
+    entrypoint: bash -c "source ~/.bashrc && python commity.py -r ~/commity -b master -o output.txt"
 
   test:
     container_name: commity_test
@@ -23,4 +24,4 @@ services:
       - 'D:\Workspace\PycharmProjects\Commity:/root/commity'
     environment:
       - DEBUG=True
-    command: bash -c "source ~/.bashrc && python -m unittest ~/commity/test/commity-test.py"
+    entrypoint: bash -c "source ~/.bashrc && python -m unittest ~/commity/test/commity-test.py"

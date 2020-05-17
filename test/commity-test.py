@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import unittest
+from typing import List, Union
 
 from commitytools.tools import commity_repo
 
@@ -14,48 +15,67 @@ class CommityTest(unittest.TestCase):
 		print("Does {} exists?".format(self.test_repo_dir))
 		self.assertTrue(os.path.exists(self.test_repo_dir))
 	
+	def test_master(self):
+		self.check_lines(
+			"master",
+			[
+				"* :twisted_rightwards_arrows: Merge branch 'acknowledgements' onto master",
+				"* :see_no_evil: Add .gitignore",
+				"* :sparkles: Add Acknowledgements.txt",
+				"* :pencil: Update README"
+			])
+	
 	def test_getting_started(self):
-		output = commity_repo(self.test_repo_dir, "getting-started")
-		lines = output.split("\n\n")
-		# Remove first line which is just the description
-		del lines[0]
-		# Remove empty lines
-		lines = list(filter(lambda s: len(s) > 0, lines))
-		
-		self.assertEqual(len(lines), 2, "Expected 2 lines.\nLines: {}".format(lines))
-		self.assertEqual(lines[0],
-							"* :pencil: Add more content in Getting Started",
-							"Actual value: {}".format(lines[0]))
-		self.assertEqual(lines[1],
-							"* :pencil: Add Getting Started section",
-							"Actual value: {}".format(lines[1]))
+		self.check_lines("getting-started",
+							[
+								"* :pencil: Add more content in Getting Started",
+								"* :pencil: Add Getting Started section",
+								"* :pencil: Add description",
+								"* :tada: First commit"
+							])
 	
 	def test_license(self):
-		output = commity_repo(self.test_repo_dir, "license")
-		lines = output.split("\n\n")
-		# Remove first and empty lines
-		del lines[0]
-		lines = list(filter(lambda s: len(s) > 0, lines))
-		
-		self.assertEqual(len(lines), 1, "Expected 1 line.\nLines: {}".format(lines))
-		self.assertEqual(lines[0],
-							"* :page_facing_up: Add LICENSE",
-							"Actual value: {}".format(lines[0]))
+		self.check_lines("license", "* :page_facing_up: Add LICENSE")
 	
 	def test_lorem(self):
-		output = commity_repo(self.test_repo_dir, "lorem")
+		self.check_lines("lorem",
+							[
+								"* :sparkles: Add lorem again!",
+								"* :sparkles: Add more lorem!",
+								"* :sparkles: Add lorem",
+								"* :pencil: Update README"
+							])
+	
+	def test_change_first_lorem_paragraph(self):
+		self.check_lines("change-first-lorem-paragraph",
+							[
+								"* :pencil: Update first paragraph of lorem text",
+								"* :sparkles: Add more lorem!",
+								"* :sparkles: Add lorem",
+								"* :pencil: Update README"
+							])
+	
+	def check_lines(self, branch: str, expected_lines: Union[List[str], str]):
+		if isinstance(expected_lines, str):
+			expected_lines = [expected_lines]
+		output = commity_repo(self.test_repo_dir, branch)
 		lines = output.split("\n\n")
 		# Remove first and empty lines
 		del lines[0]
 		lines = list(filter(lambda s: len(s) > 0, lines))
-		
-		self.assertEqual(len(lines), 2, "Expected 2 lines.\nLines: {}".format(lines))
-		self.assertEqual(lines[0],
-							"* :sparkles: Add more lorem!",
-							"Actual value: {}".format(lines[0]))
-		self.assertEqual(lines[1],
-							"* :sparkles: Add lorem",
-							"Actual value: {}".format(lines[1]))
+		self.assertEqual(
+			len(lines),
+			len(expected_lines),
+			"Expected {} lines.\nExpected lines:\n\t{}\nGot lines:\n\t{}".format(
+				len(expected_lines),
+				'\n\t'.join(expected_lines),
+				'\n\t'.join(lines)))
+		for i, line in enumerate(lines):
+			self.assertEqual(
+				line,
+				expected_lines[i],
+				"Expected: \"{}\"\nGot: \"{}\"".format(expected_lines[i],
+														line))
 
 if __name__ == '__main__':
 	unittest.main()

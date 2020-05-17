@@ -2,5 +2,4 @@
 .gitignore
 output.txt
 o.txt
-Dockerfile
 docker-compose.yml

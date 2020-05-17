@@ -1,84 +1,57 @@
 # -*- coding: utf-8 -*-
+import collections
 import os
-import re
-from typing import Optional, Union, Tuple, Any, Iterable
-import networkx as nx
+from typing import Optional, Union, Tuple, Any
 
 import git
 from typeguard import typechecked
 
 log_buffer = ""
-DEBUG = bool(os.getenv("DEBUG", "False"))
-
-# Pattern inspired from Joey's, https://stackoverflow.com/a/12093994/7347145 (consulted on July the 9th, 2019)
-# This pattern detect the name of the branch in the revision string of a commit
-rev_pattern = re.compile(
-	r"([a-fA-F0-9]{40})\s((?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!@$)(?!.*\\)[^\000-\037\177 ~^:?*[]+/?[^\000-\037\177 ~^:?*[]+(?<!\.lock)(?<!/)(?<!\.))(?:\^([0-9]+))?(?:~([0-9]+))?"
-)
 
 @typechecked
-def commity_repo(repo: Optional[str] = None,
+def commity_repo(repo_path: Optional[str] = None,
 					branch: Optional[str] = None,
 					output: Optional[str] = None) -> str:
 	global log_buffer
 	log_buffer = ""
 	
-	# Create graph for repo
-	graph = nx.DiGraph()
-	
 	# If no repo has been given, take the current directory
-	if repo is None:
-		repo = os.path.dirname(os.path.realpath(__file__))
+	if repo_path is None:
+		repo_path = os.getcwd()
+	
+	if os.name.strip().lower() == "nt":
+		repo_path = repo_path.replace('\\', '/')
+	else:
+		repo_path = os.path.normpath(repo_path)
 	
 	# Get the repo
 	try:
-		repo = git.Repo(repo)
+		repo = git.Repo(repo_path)
 	except git.exc.InvalidGitRepositoryError:
-		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo),
+		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo_path),
 			output=output)
-		exit(-1)
+		exit(1)
 	
 	# noinspection PyUnboundLocalVariable
 	if repo.bare:
 		log("ERROR: The given repository is bare.", output=output)
-		exit(-2)
-	
-	# Fill graph
-	branches: Iterable[git.Head] = repo.branches
-	for b in branches:
-		for c in repo.iter_commits(rev=b.name):
-			if c not in graph:
-				graph.add_node(c)
-			for parent in c.parents:
-				if not graph.has_edge(parent, c):
-					graph.add_edge(parent, c, weight=c.stats.total["lines"])
-	
-	# Draw the graph if in debug mode
-	if DEBUG:
-		try:
-			import matplotlib.pyplot as plt
-			nx.draw(
-				graph,
-				labels={c: c.summary for c in graph},
-				node_size=400,
-				font_size=16,
-				font_color='r',
-				pos=nx.spring_layout(graph,
-										k=0.15,
-										iterations=20))
-			plt.savefig("graph.png")
-		except ImportError:
-			pass
+		exit(2)
 	
 	# If no branch has been given, take the current branch (it might be `master`)
 	if branch is None:
 		branch = repo.active_branch.name
 	
-	dlog("Analysing branch \"{}\"", branch)
-	
+	# noinspection PyTypeHints
+	repo.branches: git.util.IterableList
 	if branch not in repo.branches:
-		log("The branch \"{}\" does not exist.".format(branch), output=output)
-		exit(-3)
+		log("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
+			branch,
+			plural(repo.branches,
+					plural="es"),
+			', '.join(map(lambda b: b.name,
+							repo.branches))),
+			output=output)
+		exit(5)
 	
 	# If an output has been given and the file already exist, remove it:
 	if output is not None and os.path.exists(output) and os.path.isfile(output):
@@ -87,25 +60,29 @@ def commity_repo(repo: Optional[str] = None,
 	log("On branch " + branch, end="\n\n", output=output)
 	
 	# Get the list of all commits from the given branch
-	for commit in repo.iter_commits(rev=branch):
-		# If the commit has more than 1 child, then stop here. We just met a merge commit.
-		if len(list(graph.successors(commit))) > 1:
-			break
-		# If we detect we are not in the same branch anymore (come back to the branch parent), then we stop the loop.
-		branch_name = get_head_name_from_commit(commit)
-		if branch_name == branch or branch_name not in repo.branches:
-			# Print the commit
+	for i, commit in enumerate(repo.iter_commits(rev=branch)):
+		# Print the commit
+		if i == 0 or len(commit.parents) <= 1:
 			log(beautify_commit(commit), output=output)
+		else:
+			break
 	
 	repo.close()
 	return log_buffer
 
 @typechecked
-def dlog(values: Any, *args):
-	if DEBUG:
-		if isinstance(values, str) and args is not None and len(args) > 0:
-			values = values.format(*args)
-		print("DEBUG> {}".format(values))
+def plural(number: Union[int,
+							collections.abc.Iterable],
+			singular: str = '',
+			plural: str = ''):
+	if hasattr(number, "__len__"):
+		# noinspection PyTypeChecker
+		number = len(number)
+	
+	if number <= 0 or number >= 2:
+		return plural
+	else:
+		return singular
 
 @typechecked
 def log(values: Any = '',
@@ -147,26 +124,6 @@ def decompose_commit(commit: Union[str, git.Commit]) -> Tuple[str, ...]:
 			return commit.replace("\n", ''),
 		else:
 			return commit,
-
-@typechecked
-def get_head_name_from_commit(commit: Union[str, git.Commit]) -> str:
-	"""
-	Return the name of the branch associated to the given commit.
-	:param commit: The commit. It can be a Commit object, or the revision string.
-	:return: Return the branch name. If not found, return an empty string.
-	"""
-	if isinstance(commit, git.Commit):
-		commit = commit.name_rev
-	
-	global rev_pattern
-	matches = re.findall(rev_pattern, commit)
-	if matches is None or len(matches) == 0:
-		return ''
-	matches = matches[0]
-	if matches is None or len(matches) < 2:
-		return ''
-	
-	return matches[1]
 
 @typechecked
 def beautify_commit(commit: Union[str, git.Commit]) -> str:

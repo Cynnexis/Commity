@@ -26,4 +26,4 @@ p.add_argument(
 )
 args = p.parse_args()
 
-commity_repo(repo=args.repo, branch=args.branch, output=args.output)
+commity_repo(repo_path=args.repo, branch=args.branch, output=args.output)

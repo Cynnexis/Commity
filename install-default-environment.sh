@@ -1,5 +1,7 @@
 #!/bin/bash
 
+WORKSPACE_DIR=$(pwd)
+
 # Update APT packages list
 apt-get update -qq
 apt-get upgrade -qq
@@ -13,6 +15,24 @@ touch ~/.bashrc
 pip install --no-cache-dir -r requirements.txt
 
 # Add default git repo for testing
+#                       |
+#                       * commit 14 (HEAD -> master)
+#                       |\    🔀 Merge branch 'acknowledgements' onto master
+#                       | \
+#    commit 13 (master) *  |
+#        Add .gitignore |  |
+#                       |  |
+#                       |  * commit 12 (acknowledgements)
+#                       |  |     ✨ Add Acknowledgements.txt
+#                       | /
+#                       |/
+#                       |     * commit 11 (change-first-lorem-paragraph)
+#                       |     |     📝 Update first paragraph of lorem text
+#                       |     |
+#                       |  *  | commit 10 (lorem)
+#                       |  |  |     ✨ Add lorem again
+#                       |  | /
+#                       |  |/
 #                       |  * commit 9 (lorem)
 #                       |  |     ✨ Add more lorem!
 #                       |  |
@@ -27,8 +47,8 @@ pip install --no-cache-dir -r requirements.txt
 #   Add LICENSE      |  |
 #                     \ |
 #                      \|
-#                       * commit 5 (HEAD -> master)
-#                       |\    Merge getting-started -> master
+#                       * commit 5 (HEAD -> master) (no fast-forward)
+#                       |\    🔀 Merge branch 'getting-started' onto master
 #                       | \
 #                       |  |
 #                       |  * commit 4 (getting-started)
@@ -51,8 +71,8 @@ cd git-test-repo
 TEST_REPO=$(pwd)
 DEBUG="True"
 echo -e "TEST_REPO=$TEST_REPO\nDEBUG=$DEBUG" >> /etc/environment
-echo -e "export TEST_REPO=$TEST_REPO\nexport DEBUG=$DEBUG" >> ~/.bashrc
-source ~/.bashrc
+echo -e "export TEST_REPO=$TEST_REPO\nexport DEBUG=$DEBUG" >> /.bashrc
+source /.bashrc
 
 # Add README in repo
 echo "# git-test-repo" > README.md
@@ -81,7 +101,7 @@ git add .
 git commit -m ":pencil: Add more content in Getting Started"
 # Merge (conserve branch)
 git checkout master
-git merge getting-started --no-ff
+git merge getting-started --no-ff -m ":twisted_rightwards_arrows: Merge branch 'getting-started' onto master"
 
 # Create new branch
 git checkout -b license
@@ -101,13 +121,54 @@ echo "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod te
 # Commit
 git add .
 git commit -m ":sparkles: Add lorem"
-# Add more lipsum
+# Add more lorem
 echo "Pretium lectus quam id leo in vitae turpis massa." >> lorem.txt
 # Commit
 git add .
 git commit -m ":sparkles: Add more lorem!"
-# Go back to master
+
+# Create new branch on lorem
+git checkout -b change-first-lorem-paragraph
+
+# Come back to lorem and commit new lorem
+git checkout lorem
+echo "Ac tincidunt vitae semper quis lectus nulla at." >> lorem.txt
+# Commit
+git add .
+git commit -m ":sparkles: Add lorem again!"
+
+# Go to branch created before and commit
+git checkout change-first-lorem-paragraph
+new_content="Lorem ipsum dolor sit amet."
+sed -i "1s/.*/$new_content/" lorem.txt
+# Commit
+git add .
+git commit -m ":pencil: Update first paragraph of lorem text"
+
+# Checkout on master
 git checkout master
 
-# Copy bashrc to root, for a constant source
-cp -f ~/.bashrc /.bashrc
+# Create new banch "acknowledgements"
+git checkout -b acknowledgements
+# Add Acknowledgements.txt
+echo -e "Acknowledgements\n" > Acknowledgements.txt
+# Commit
+git add .
+git commit -m ":sparkles: Add Acknowledgements.txt"
+
+# Checkout on master
+git checkout master
+# Create .gitignore
+echo "*~" > .gitignore
+# Commit
+git add .
+git commit -m ":see_no_evil: Add .gitignore"
+
+# Merge "acknowledgements" (conserve branch)
+git merge acknowledgements --no-ff -m ":twisted_rightwards_arrows: Merge branch 'acknowledgements' onto master"
+
+# Go back to workspace
+cd $WORKSPACE_DIR
+
+# Copy bashrc to current user (root)
+cp -f /.bashrc ~/.bashrc
