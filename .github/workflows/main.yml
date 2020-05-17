@@ -45,8 +45,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Zip projects
-          id: zip_commity
-          run: zip commity.zip * .*
+        id: zip_commity
+        run: zip commity.zip * .*
       - name: Create a release
         id: create_release
         uses: actions/create-release@latest
