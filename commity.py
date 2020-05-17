@@ -18,12 +18,6 @@ p.add_argument(
 	default=None,
 	help="The branch were to collect the commits. If not given, default value is current branch."
 )
-p.add_argument(
-	"-o",
-	"--output",
-	default=None,
-	help="The output file. All information will be written in the given file. If the file is invalid, or no file is given, stdout is used instead."
-)
 args = p.parse_args()
 
-commity_repo(repo_path=args.repo, branch=args.branch, output=args.output)
+commity_repo(repo_path=args.repo, branch=args.branch)

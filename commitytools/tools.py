@@ -25,17 +25,11 @@ def commity_repo(repo_path: Optional[str] = None,
 		repo_path = os.path.normpath(repo_path)
 	
 	# Get the repo
-	try:
-		repo = git.Repo(repo_path)
-	except git.exc.InvalidGitRepositoryError:
-		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo_path),
-			output=output)
-		exit(1)
+	repo = git.Repo(repo_path)
 	
 	# noinspection PyUnboundLocalVariable
 	if repo.bare:
-		log("ERROR: The given repository is bare.", output=output)
-		exit(2)
+		raise git.exc.InvalidGitRepositoryError("The given repository is bare.")
 	
 	# If no branch has been given, take the current branch (it might be `master`)
 	if branch is None:
@@ -44,14 +38,13 @@ def commity_repo(repo_path: Optional[str] = None,
 	# noinspection PyTypeHints
 	repo.branches: git.util.IterableList
 	if branch not in repo.branches:
-		log("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
-			branch,
-			plural(repo.branches,
-					plural="es"),
-			', '.join(map(lambda b: b.name,
-							repo.branches))),
-			output=output)
-		exit(5)
+		raise git.exc.GitError(
+			"ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
+				branch,
+				plural(repo.branches,
+						plural="es"),
+				', '.join(map(lambda b: b.name,
+								repo.branches))))
 	
 	# If an output has been given and the file already exist, remove it:
 	if output is not None and os.path.exists(output) and os.path.isfile(output):
