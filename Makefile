@@ -3,6 +3,10 @@ DOCKER_IMAGE=cynnexis/commity
 
 .PHONY: all help test clean
 
+all:
+	$(MAKE) help; \
+	exit 1
+
 help:
 	@echo "Commity Makefile"
 	@echo ''
