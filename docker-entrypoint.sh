@@ -7,7 +7,8 @@ fi
 command=""
 if [[ $# == 0 ]]
 then
-	command="run"
+	echo "No arguments passed."
+	exit 1
 else
 	command=$1
 fi
