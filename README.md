@@ -85,7 +85,6 @@ name again. If the command is successfully executed, you'll find the file
 * [GitPython][gitpython]
 * [GitHub Actions][githubactions]
 * [YAPF][yapf]
-* [Husky][husky]
 
 ## Contributing
 
@@ -122,7 +121,6 @@ to have written the monstrous regex to match branch name.
 [gitpython]: https://gitpython.readthedocs.io/en/stable/index.html
 [githubactions]: https://github.com/features/actions
 [yapf]: https://github.com/google/yapf
-[husky]: https://github.com/typicode/husky
 [shield-language]: https://img.shields.io/badge/language-python-yellow.svg
 [shield-license]: https://img.shields.io/badge/license-GPL-blue.svg
 [shield-python-version]: https://img.shields.io/badge/python-3.7-yellow.svg

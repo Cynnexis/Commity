@@ -6,14 +6,10 @@ from typing import Optional, Union, Tuple, Any
 import git
 from typeguard import typechecked
 
-log_buffer = ""
 
 @typechecked
-def commity_repo(repo_path: Optional[str] = None,
-					branch: Optional[str] = None,
-					output: Optional[str] = None) -> str:
-	global log_buffer
-	log_buffer = ""
+def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None) -> str:
+	content = ""
 	
 	# If no repo has been given, take the current directory
 	if repo_path is None:
@@ -25,17 +21,11 @@ def commity_repo(repo_path: Optional[str] = None,
 		repo_path = os.path.normpath(repo_path)
 	
 	# Get the repo
-	try:
-		repo = git.Repo(repo_path)
-	except git.exc.InvalidGitRepositoryError:
-		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo_path),
-			output=output)
-		exit(1)
+	repo = git.Repo(repo_path)
 	
 	# noinspection PyUnboundLocalVariable
 	if repo.bare:
-		log("ERROR: The given repository is bare.", output=output)
-		exit(2)
+		raise git.exc.InvalidGitRepositoryError("The given repository is bare.")
 	
 	# If no branch has been given, take the current branch (it might be `master`)
 	if branch is None:
@@ -44,37 +34,27 @@ def commity_repo(repo_path: Optional[str] = None,
 	# noinspection PyTypeHints
 	repo.branches: git.util.IterableList
 	if branch not in repo.branches:
-		log("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
-			branch,
-			plural(repo.branches,
-					plural="es"),
-			', '.join(map(lambda b: b.name,
-							repo.branches))),
-			output=output)
-		exit(5)
+		raise git.exc.GitError("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
+			branch, plural(repo.branches, plural="es"), ', '.join(map(lambda b: b.name, repo.branches))))
 	
-	# If an output has been given and the file already exist, remove it:
-	if output is not None and os.path.exists(output) and os.path.isfile(output):
-		os.remove(output)
-	
-	log("On branch " + branch, end="\n\n", output=output)
+	content = f"On branch {branch}\n\n"
 	
 	# Get the list of all commits from the given branch
 	for i, commit in enumerate(repo.iter_commits(rev=branch)):
 		# Print the commit
 		if i == 0 or len(commit.parents) <= 1:
-			log(beautify_commit(commit), output=output)
+			content += beautify_commit(commit) + '\n'
 		else:
 			break
 	
+	print(content)
+	
 	repo.close()
-	return log_buffer
+	return content
+
 
 @typechecked
-def plural(number: Union[int,
-							collections.abc.Iterable],
-			singular: str = '',
-			plural: str = ''):
+def plural(number: Union[int, collections.abc.Iterable], singular: str = '', plural: str = ''):
 	if hasattr(number, "__len__"):
 		# noinspection PyTypeChecker
 		number = len(number)
@@ -84,26 +64,6 @@ def plural(number: Union[int,
 	else:
 		return singular
 
-@typechecked
-def log(values: Any = '',
-		output: Optional[str] = None,
-		mode: str = 'a',
-		encoding: str = "utf-8",
-		end='\n',
-		flush: bool = True,
-		*args):
-	global log_buffer
-	log_buffer += values + end
-	if isinstance(values, str) and args is not None and len(args) > 0:
-		values = values.format(*args)
-	if output is not None:
-		try:
-			f = open(output, mode=mode, encoding=encoding)
-			f.write(values + end)
-		except OSError:
-			print(values, end=end, flush=flush)
-	else:
-		print(values, end=end, flush=flush)
 
 @typechecked
 def decompose_commit(commit: Union[str, git.Commit]) -> Tuple[str, ...]:
@@ -125,6 +85,7 @@ def decompose_commit(commit: Union[str, git.Commit]) -> Tuple[str, ...]:
 		else:
 			return commit,
 
+
 @typechecked
 def beautify_commit(commit: Union[str, git.Commit]) -> str:
 	"""
@@ -133,10 +94,7 @@ def beautify_commit(commit: Union[str, git.Commit]) -> str:
 	:return: Return the commit in a more adapted format.
 	"""
 	
-	def add_bullet(part: str,
-					bullet: str = '*',
-					prefix: str = '',
-					suffix: str = '\n') -> str:
+	def add_bullet(part: str, bullet: str = '*', prefix: str = '', suffix: str = '\n') -> str:
 		if not part.startswith(bullet):
 			return prefix + bullet + ' ' + part + suffix
 		else:
