@@ -5,6 +5,7 @@ from typing import List, Union
 
 from commitytools.tools import commity_repo
 
+
 class CommityTest(unittest.TestCase):
 	
 	def __init__(self, *args, **kwargs):
@@ -16,44 +17,31 @@ class CommityTest(unittest.TestCase):
 		self.assertTrue(os.path.exists(self.test_repo_dir))
 	
 	def test_master(self):
-		self.check_lines(
-			"master",
-			[
-				"* :twisted_rightwards_arrows: Merge branch 'acknowledgements' onto master",
-				"* :see_no_evil: Add .gitignore",
-				"* :sparkles: Add Acknowledgements.txt",
-				"* :pencil: Update README"
-			])
+		self.check_lines("master", [
+			"* :twisted_rightwards_arrows: Merge branch 'acknowledgements' onto master",
+			"* :see_no_evil: Add .gitignore", "* :sparkles: Add Acknowledgements.txt", "* :pencil: Update README"
+		])
 	
 	def test_getting_started(self):
-		self.check_lines("getting-started",
-							[
-								"* :pencil: Add more content in Getting Started",
-								"* :pencil: Add Getting Started section",
-								"* :pencil: Add description",
-								"* :tada: First commit"
-							])
+		self.check_lines("getting-started", [
+			"* :pencil: Add more content in Getting Started", "* :pencil: Add Getting Started section",
+			"* :pencil: Add description", "* :tada: First commit"
+		])
 	
 	def test_license(self):
 		self.check_lines("license", "* :page_facing_up: Add LICENSE")
 	
 	def test_lorem(self):
-		self.check_lines("lorem",
-							[
-								"* :sparkles: Add lorem again!",
-								"* :sparkles: Add more lorem!",
-								"* :sparkles: Add lorem",
-								"* :pencil: Update README"
-							])
+		self.check_lines("lorem", [
+			"* :sparkles: Add lorem again!", "* :sparkles: Add more lorem!", "* :sparkles: Add lorem",
+			"* :pencil: Update README"
+		])
 	
 	def test_change_first_lorem_paragraph(self):
-		self.check_lines("change-first-lorem-paragraph",
-							[
-								"* :pencil: Update first paragraph of lorem text",
-								"* :sparkles: Add more lorem!",
-								"* :sparkles: Add lorem",
-								"* :pencil: Update README"
-							])
+		self.check_lines("change-first-lorem-paragraph", [
+			"* :pencil: Update first paragraph of lorem text", "* :sparkles: Add more lorem!", "* :sparkles: Add lorem",
+			"* :pencil: Update README"
+		])
 	
 	def check_lines(self, branch: str, expected_lines: Union[List[str], str]):
 		if isinstance(expected_lines, str):
@@ -64,18 +52,11 @@ class CommityTest(unittest.TestCase):
 		del lines[0]
 		lines = list(filter(lambda s: len(s) > 0, lines))
 		self.assertEqual(
-			len(lines),
-			len(expected_lines),
-			"Expected {} lines.\nExpected lines:\n\t{}\nGot lines:\n\t{}".format(
-				len(expected_lines),
-				'\n\t'.join(expected_lines),
-				'\n\t'.join(lines)))
+			len(lines), len(expected_lines), "Expected {} lines.\nExpected lines:\n\t{}\nGot lines:\n\t{}".format(
+				len(expected_lines), '\n\t'.join(expected_lines), '\n\t'.join(lines)))
 		for i, line in enumerate(lines):
-			self.assertEqual(
-				line,
-				expected_lines[i],
-				"Expected: \"{}\"\nGot: \"{}\"".format(expected_lines[i],
-														line))
+			self.assertEqual(line, expected_lines[i], "Expected: \"{}\"\nGot: \"{}\"".format(expected_lines[i], line))
+
 
 if __name__ == '__main__':
 	unittest.main()

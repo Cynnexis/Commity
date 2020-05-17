@@ -8,10 +8,9 @@ from typeguard import typechecked
 
 log_buffer = ""
 
+
 @typechecked
-def commity_repo(repo_path: Optional[str] = None,
-					branch: Optional[str] = None,
-					output: Optional[str] = None) -> str:
+def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, output: Optional[str] = None) -> str:
 	global log_buffer
 	log_buffer = ""
 	
@@ -38,13 +37,8 @@ def commity_repo(repo_path: Optional[str] = None,
 	# noinspection PyTypeHints
 	repo.branches: git.util.IterableList
 	if branch not in repo.branches:
-		raise git.exc.GitError(
-			"ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
-				branch,
-				plural(repo.branches,
-						plural="es"),
-				', '.join(map(lambda b: b.name,
-								repo.branches))))
+		raise git.exc.GitError("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
+			branch, plural(repo.branches, plural="es"), ', '.join(map(lambda b: b.name, repo.branches))))
 	
 	# If an output has been given and the file already exist, remove it:
 	if output is not None and os.path.exists(output) and os.path.isfile(output):
@@ -63,11 +57,9 @@ def commity_repo(repo_path: Optional[str] = None,
 	repo.close()
 	return log_buffer
 
+
 @typechecked
-def plural(number: Union[int,
-							collections.abc.Iterable],
-			singular: str = '',
-			plural: str = ''):
+def plural(number: Union[int, collections.abc.Iterable], singular: str = '', plural: str = ''):
 	if hasattr(number, "__len__"):
 		# noinspection PyTypeChecker
 		number = len(number)
@@ -76,6 +68,7 @@ def plural(number: Union[int,
 		return plural
 	else:
 		return singular
+
 
 @typechecked
 def log(values: Any = '',
@@ -98,6 +91,7 @@ def log(values: Any = '',
 	else:
 		print(values, end=end, flush=flush)
 
+
 @typechecked
 def decompose_commit(commit: Union[str, git.Commit]) -> Tuple[str, ...]:
 	"""
@@ -118,6 +112,7 @@ def decompose_commit(commit: Union[str, git.Commit]) -> Tuple[str, ...]:
 		else:
 			return commit,
 
+
 @typechecked
 def beautify_commit(commit: Union[str, git.Commit]) -> str:
 	"""
@@ -126,10 +121,7 @@ def beautify_commit(commit: Union[str, git.Commit]) -> str:
 	:return: Return the commit in a more adapted format.
 	"""
 	
-	def add_bullet(part: str,
-					bullet: str = '*',
-					prefix: str = '',
-					suffix: str = '\n') -> str:
+	def add_bullet(part: str, bullet: str = '*', prefix: str = '', suffix: str = '\n') -> str:
 		if not part.startswith(bullet):
 			return prefix + bullet + ' ' + part + suffix
 		else:
