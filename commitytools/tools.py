@@ -17,7 +17,7 @@ def commity_repo(repo_path: Optional[str] = None,
 	
 	# If no repo has been given, take the current directory
 	if repo_path is None:
-		repo_path = os.path.dirname(os.path.realpath(__file__))
+		repo_path = os.getcwd()
 	
 	if os.name.strip().lower() == "nt":
 		repo_path = repo_path.replace('\\', '/')
@@ -37,6 +37,10 @@ def commity_repo(repo_path: Optional[str] = None,
 		log("ERROR: The given repository is bare.", output=output)
 		exit(2)
 	
+	# If no branch has been given, take the current branch (it might be `master`)
+	if branch is None:
+		branch = repo.active_branch.name
+	
 	# noinspection PyTypeHints
 	repo.branches: git.util.IterableList
 	if branch not in repo.branches:
@@ -44,13 +48,9 @@ def commity_repo(repo_path: Optional[str] = None,
 			branch,
 			plural(repo.branches,
 					plural="es"),
-			', '.join(repo.branches)),
+			', '.join(map(lambda b: b.name, repo.branches))),
 			output=output)
 		exit(5)
-	
-	# If no branch has been given, take the current branch (it might be `master`)
-	if branch is None:
-		branch = repo.active_branch.name
 	
 	# If an output has been given and the file already exist, remove it:
 	if output is not None and os.path.exists(output) and os.path.isfile(output):
