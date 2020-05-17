@@ -48,7 +48,8 @@ def commity_repo(repo_path: Optional[str] = None,
 			branch,
 			plural(repo.branches,
 					plural="es"),
-			', '.join(map(lambda b: b.name, repo.branches))),
+			', '.join(map(lambda b: b.name,
+							repo.branches))),
 			output=output)
 		exit(5)
 	
