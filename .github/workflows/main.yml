@@ -1,6 +1,16 @@
 name: Commity CI/CD
 
-on: [push, pull_request]
+on:
+  pull_request:
+    branches:
+      - master
+      - develop
+      - 'cicd/**'
+  push:
+    branches:
+      - master
+      - develop
+      - 'cicd/**'
 
 jobs:
   lint:
@@ -14,11 +24,7 @@ jobs:
         id: yapf
         with:
           command: 'lint'
-      # Print the output from the `yapf` step
-      - name: Print the output
-        run: echo ${{ steps.yapf.outputs.output }}
-      - name: Print the exit code
-        run: echo Exit code ${{ steps.yapf.outputs.exitCode }}
+
   test:
     runs-on: ubuntu-18.04
     name: Test the source code of the project.
@@ -27,11 +33,38 @@ jobs:
         uses: actions/checkout@v2
       - name: commitytest
         uses: ./
-        id: commitytest
+        id: commity_test
         with:
-          command: 'test'
-      # Print the output from the `yapf` step
-      - name: Print the output
-        run: echo ${{ steps.yapf.outputs.output }}
-      - name: Print the exit code
-        run: echo Exit code ${{ steps.yapf.outputs.exitCode }}
+          command: "test"
+
+  release:
+    runs-on: ubuntu-18.04
+    name: Release a new version
+    if: github.event_name == 'pull_request' && github.base_ref == 'master' || contains(github.ref, 'cicd/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Zip projects
+          id: zip_commity
+          run: zip commity.zip * .*
+      - name: Create a release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.sha }}
+          release_name: ${{ github.sha }}
+          body: "Ref: ${{ github.ref }} SHA: ${{ github.sha }}"
+          draft: true
+          prerelease: false
+      - name: Upload release asset solutec_reports.zip
+        id: upload_release_asset_solutec_reports
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./commity.zip
+          asset_name: commity.zip
+          asset_content_type: application/zip

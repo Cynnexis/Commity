@@ -31,14 +31,13 @@ function print_yapf_tips() {
 	echo "Please update those elements if necessary."
 }
 
-output=''
 exit_code=0
 
 # Parse command
 if [ $command == "run" ]
 then
 	echo "${@:2}"
-	output=$(python commity.py "${@:2}")
+	python commity.py "${@:2}"
 	exit_code=$?
 elif [[ $command = "lint" ]]; then
 	if [[ $USE_GIT != "1" && $USE_GIT != "true" ]]; then
@@ -73,6 +72,4 @@ else
 	exit 1
 fi
 
-echo ::set-output name=output::$output
-echo ::set-output name=exit_code::$exit_code
-exit $exit_code
+exit "$exit_code"
