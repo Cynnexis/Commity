@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source ~/.bashrc
+if [ -f "~/.bashrc" ]; then
+	source ~/.bashrc
+fi
 
 command=""
 if [[ $# == 0 ]]
@@ -72,4 +74,5 @@ else
 	exit 1
 fi
 
-exit "$exit_code"
+echo "$exit_code"
+exit $exit_code
