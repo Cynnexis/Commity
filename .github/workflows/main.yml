@@ -19,8 +19,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Run YAPF
+      - name: Get Python image
         uses: docker://python:3.7.6-buster
+      - name: Run YAPF
         run: |
           pip install "yapf==0.30.0"
           yapf -r --diff ./*.py test/ commitytools/
