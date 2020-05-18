@@ -1,11 +1,14 @@
 #!/bin/bash
 
-source ~/.bashrc
+if [ -f "~/.bashrc" ]; then
+	source ~/.bashrc
+fi
 
 command=""
 if [[ $# == 0 ]]
 then
-	command="run"
+	echo "No arguments passed."
+	exit 1
 else
 	command=$1
 fi
@@ -20,25 +23,25 @@ else
 fi
 
 if [[ ${#PYTHON_DIRS[@]} = 0 ]]; then
-	PYTHON_DIRS=(./*.py chatbotutil/ test/ routes/ datablender/ data/)
+	PYTHON_DIRS=(./*.py test/ commitytools/)
 fi
 
 function print_yapf_tips() {
 	echo "If you add a new directory to the project, or create a Python file in a directory that didn't contain any scritps, please make sur that the directory is added to the following YAPF commands:"
 	echo " * In ./docker-entrypoint.sh, the variable PYTHON_DIRS must contain all directories that have Python scripts."
+	echo " * In ./github/worksflows/main.yml, the job \"lint\" contains a YAPF command."
 	echo " * In ./.git/hooks/pre-commit must have the specified directories as well, at two different places."
 	echo ''
 	echo "Please update those elements if necessary."
 }
 
-output=''
 exit_code=0
 
 # Parse command
 if [ $command == "run" ]
 then
 	echo "${@:2}"
-	output=$(python commity.py "${@:2}")
+	python commity.py "${@:2}"
 	exit_code=$?
 elif [[ $command = "lint" ]]; then
 	if [[ $USE_GIT != "1" && $USE_GIT != "true" ]]; then
@@ -73,6 +76,5 @@ else
 	exit 1
 fi
 
-echo ::set-output name=output::$output
-echo ::set-output name=exit_code::$exit_code
+echo "$exit_code"
 exit $exit_code
