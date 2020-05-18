@@ -23,7 +23,7 @@ jobs:
         uses: ./
         id: yapf
         with:
-          command: 'lint'
+          args: 'lint'
 
   test:
     runs-on: ubuntu-18.04
@@ -35,7 +35,7 @@ jobs:
         uses: ./
         id: commity_test
         with:
-          command: "test"
+          args: "test"
 
   release:
     runs-on: ubuntu-18.04
