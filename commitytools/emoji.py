@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 import sys
 from functools import lru_cache
 from typing import Dict, Optional, List
@@ -10,10 +11,18 @@ from typeguard import typechecked
 
 from commitytools import plural, size_to_str
 
+emoji_cache: Optional[List[Dict[str, Optional[str]]]] = None
+emoji_markup_pattern = re.compile(r":([\w+\-]+):", re.IGNORECASE)
+
 
 @typechecked
-@lru_cache(maxsize=2)
 def get_emoji(verbose: bool = False) -> List[Dict[str, Optional[str]]]:
+	global emoji_cache
+	
+	# Check cache
+	if emoji_cache is not None and len(emoji_cache) > 0:
+		return emoji_cache
+	
 	# Else, download the page
 	response = requests.get("https://gist.github.com/rxaviers/7360908")
 	if response.status_code != 200:
@@ -57,7 +66,11 @@ def get_emoji(verbose: bool = False) -> List[Dict[str, Optional[str]]]:
 					emoji_code = None
 				
 				if (emoji_characters is not None or emoji_image_url is not None) and emoji_code is not None:
-					emoji.append({"emoji": emoji_characters, "image_url": emoji_image_url, "code": emoji_code})
+					emoji.append({
+						"emoji": emoji_characters,
+						"image_url": emoji_image_url,
+						"code": emoji_code.replace(':', '')
+					})
 	
 	if verbose:
 		num_emo = len(emoji)
@@ -74,7 +87,24 @@ def get_emoji(verbose: bool = False) -> List[Dict[str, Optional[str]]]:
 				f"a valid emoji code.")
 		print("Size: {}".format(size_to_str(sys.getsizeof(emoji))))
 	
+	emoji_cache = emoji
+	
 	return emoji
+
+
+def replace_emoji(content: str) -> str:
+	matches = re.findall(emoji_markup_pattern, content)
+	
+	if len(matches) > 0:
+		emoji = get_emoji(verbose=False)
+		for match in matches:
+			for emo in emoji:
+				if emo["code"] == match:
+					if emo["emoji"] is not None:
+						content = content.replace(f":{match}:", emo["emoji"])
+					break
+	
+	return content
 
 
 if __name__ == "__main__":

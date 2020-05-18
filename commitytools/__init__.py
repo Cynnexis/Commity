@@ -17,6 +17,7 @@ def plural(number: Union[int, collections.abc.Iterable], singular: str = '', plu
 		return singular
 
 
+@typechecked
 def size_to_str(size: Union[int, float, str], decimal_places: int = 2) -> str:
 	"""
 	Transform the given size (in bytes) to a human-readable version of it. For instance,

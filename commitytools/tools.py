@@ -6,12 +6,11 @@ import git
 from typeguard import typechecked
 
 from commitytools import plural
+from commitytools.emoji import replace_emoji
 
 
 @typechecked
-def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None) -> str:
-	content = ""
-	
+def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, convert_emoji: bool = False) -> str:
 	# If no repo has been given, take the current directory
 	if repo_path is None:
 		repo_path = os.getcwd()
@@ -47,6 +46,10 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None) 
 			content += beautify_commit(commit) + '\n'
 		else:
 			break
+	
+	# Convert emoji
+	if convert_emoji:
+		content = replace_emoji(content)
 	
 	print(content)
 	
