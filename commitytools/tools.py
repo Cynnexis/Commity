@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import collections
 import os
-from typing import Optional, Union, Tuple, Any
+from typing import Optional, Union, Tuple
 
 import git
 from typeguard import typechecked
+
+from commitytools import plural
 
 
 @typechecked
@@ -51,18 +52,6 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None) 
 	
 	repo.close()
 	return content
-
-
-@typechecked
-def plural(number: Union[int, collections.abc.Iterable], singular: str = '', plural: str = ''):
-	if hasattr(number, "__len__"):
-		# noinspection PyTypeChecker
-		number = len(number)
-	
-	if number <= 0 or number >= 2:
-		return plural
-	else:
-		return singular
 
 
 @typechecked
