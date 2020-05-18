@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-import collections
 import os
-from typing import Optional, Union, Tuple, Any
+from typing import Optional, Union, Tuple
 
 import git
 from typeguard import typechecked
 
+from commitytools import plural
+from commitytools.emoji import replace_emoji
+
 
 @typechecked
-def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None) -> str:
-	content = ""
-	
+def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, convert_emoji: bool = False) -> str:
 	# If no repo has been given, take the current directory
 	if repo_path is None:
 		repo_path = os.getcwd()
@@ -47,22 +47,14 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None) 
 		else:
 			break
 	
+	# Convert emoji
+	if convert_emoji:
+		content = replace_emoji(content)
+	
 	print(content)
 	
 	repo.close()
 	return content
-
-
-@typechecked
-def plural(number: Union[int, collections.abc.Iterable], singular: str = '', plural: str = ''):
-	if hasattr(number, "__len__"):
-		# noinspection PyTypeChecker
-		number = len(number)
-	
-	if number <= 0 or number >= 2:
-		return plural
-	else:
-		return singular
 
 
 @typechecked

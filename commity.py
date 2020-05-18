@@ -12,6 +12,8 @@ p.add_argument(
 	"--branch",
 	default=None,
 	help="The branch were to collect the commits. If not given, default value is current branch.")
+p.add_argument(
+	"-e", "--convert-emoji", default=False, help="Convert GitHub Emoji Markup to actual emoji.", action="store_true")
 args = p.parse_args()
 
-commity_repo(repo_path=args.repo, branch=args.branch)
+commity_repo(repo_path=args.repo, branch=args.branch, convert_emoji=args.convert_emoji)
