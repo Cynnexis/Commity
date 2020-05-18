@@ -20,10 +20,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Run YAPF
-        uses: ./
+        uses: docker://python:3.7.6-buster
+        run: |
+          pip install "yapf==0.30.0"
+          yapf -r --diff ./*.py test/ commitytools/
         id: yapf
-        with:
-          args: 'lint'
 
   test:
     runs-on: ubuntu-18.04
