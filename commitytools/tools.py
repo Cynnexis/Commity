@@ -7,6 +7,7 @@ from typeguard import typechecked
 
 from commitytools import plural
 from commitytools.emoji import replace_emoji
+from commitytools.issue_tracker import get_issues
 
 
 @typechecked
@@ -37,7 +38,7 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, 
 		raise git.exc.GitError("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
 			branch, plural(repo.branches, plural="es"), ', '.join(map(lambda b: b.name, repo.branches))))
 	
-	content = f"On branch {branch}\n\n"
+	content = ''
 	
 	# Get the list of all commits from the given branch
 	for i, commit in enumerate(repo.iter_commits(rev=branch)):
@@ -46,6 +47,18 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, 
 			content += beautify_commit(commit) + '\n'
 		else:
 			break
+	
+	# Add fixed issues
+	issues = get_issues(content)
+	if len(issues) > 0:
+		fixed_str = "Fixed "
+		if len(issues) == 1:
+			fixed_str += f"#{issues[0]}"
+		else:
+			# Join all the issues, except for the last (add an 'and' instead of comma)
+			fixed_str += ", ".join(f"#{issue}" for issue in issues[:-1]) + f" and #{issues[-1]}"
+		
+		content = fixed_str + ".\n\n" + content
 	
 	# Convert emoji
 	if convert_emoji:
