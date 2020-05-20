@@ -4,6 +4,8 @@ from typing import Union
 
 from typeguard import typechecked
 
+VERSION = "0.0.1"
+
 
 @typechecked
 def plural(number: Union[int, collections.abc.Iterable], singular: str = '', plural: str = ''):
