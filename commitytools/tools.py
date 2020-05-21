@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 from typing import Optional, Union, Tuple
 
 import git
@@ -8,6 +9,8 @@ from typeguard import typechecked
 from commitytools import plural
 from commitytools.emoji import replace_emoji
 from commitytools.issue_tracker import get_issues
+
+trailing_newline = re.compile("(?:\r?\n)+$", re.IGNORECASE | re.MULTILINE)
 
 
 @typechecked
@@ -61,6 +64,9 @@ def commity_repo(repo_path: Optional[str] = None,
 			content += beautify_commit(commit) + '\n'
 		else:
 			break
+	
+	# Remove trailing new lines
+	content = re.sub(trailing_newline, '', content)
 	
 	# Add fixed issues
 	if fixed_issues:
