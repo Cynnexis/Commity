@@ -49,7 +49,7 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, 
 			break
 	
 	# Add fixed issues
-	issues = get_issues(content)
+	issues = get_issues(content, only_fixed=True)
 	if len(issues) > 0:
 		fixed_str = "Fixed "
 		if len(issues) == 1:

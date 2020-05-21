@@ -31,7 +31,7 @@ class CommityTest(unittest.TestCase):
 		])
 	
 	def test_license(self):
-		self.check_lines("license", ["* :page_facing_up: Add LICENSE", "* Fixed #2."])
+		self.check_lines("license", ["Fixed #2.", "* :page_facing_up: Add LICENSE", "* Fixed #2."])
 	
 	def test_lorem(self):
 		self.check_lines("lorem", [
@@ -45,15 +45,15 @@ class CommityTest(unittest.TestCase):
 			"* :pencil: Update README"
 		])
 	
-	def check_lines(self, branch: str, expected_lines: Union[List[str], str]):
+	def check_lines(self, branch: str, expected_lines: Union[List[str], str], *args: str):
 		if isinstance(expected_lines, str):
 			expected_lines = [expected_lines]
+		
+		if len(args) > 0:
+			expected_lines.extend(args)
+		
 		output = commity_repo(self.test_repo_dir, branch)
 		lines = re.sub(r"\t+", '', re.sub(r"\n+", '\n', output)).split("\n")
-		
-		# Remove first and empty lines if beginning with "On branch..." or "Fixed..."
-		if not lines[0].startswith("* "):
-			del lines[0]
 		
 		# Remove empty strings
 		lines = [line for line in lines if len(line.strip()) > 0]
