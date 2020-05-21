@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import unittest
 from typing import List, Union
 
@@ -24,32 +25,41 @@ class CommityTest(unittest.TestCase):
 	
 	def test_getting_started(self):
 		self.check_lines("getting-started", [
-			"* :pencil: Add more content in Getting Started", "* :pencil: Add Getting Started section",
-			"* :pencil: Add description", "* :tada: First commit"
+			"* :pencil: Add more content in Getting Started", "* Improved #1.",
+			"* :pencil: Add Getting Started section", "* :pencil: Add description", "* Started #1.",
+			"* :tada: First commit"
 		])
 	
 	def test_license(self):
-		self.check_lines("license", "* :page_facing_up: Add LICENSE")
+		self.check_lines("license", ["Fixed #2.", "* :page_facing_up: Add LICENSE", "* Fixed #2."])
 	
 	def test_lorem(self):
 		self.check_lines("lorem", [
-			"* :sparkles: Add lorem again!", "* :sparkles: Add more lorem!", "* :sparkles: Add lorem",
+			"Fixed #5, #4 and gh_user/gh_project#2.", "* :sparkles: Add lorem again!", "* Fixed #5",
+			"* :sparkles: Add more lorem!", "* Fixed #4 and gh_user/gh_project#2.", "* :sparkles: Add lorem",
 			"* :pencil: Update README"
 		])
 	
 	def test_change_first_lorem_paragraph(self):
 		self.check_lines("change-first-lorem-paragraph", [
-			"* :pencil: Update first paragraph of lorem text", "* :sparkles: Add more lorem!", "* :sparkles: Add lorem",
+			"Fixed #4 and gh_user/gh_project#2.", "* :pencil: Update first paragraph of lorem text",
+			"* :sparkles: Add more lorem!", "* Fixed #4 and gh_user/gh_project#2.", "* :sparkles: Add lorem",
 			"* :pencil: Update README"
 		])
 	
-	def check_lines(self, branch: str, expected_lines: Union[List[str], str]):
+	def check_lines(self, branch: str, expected_lines: Union[List[str], str], *args: str):
 		if isinstance(expected_lines, str):
 			expected_lines = [expected_lines]
-		output = commity_repo(self.test_repo_dir, branch)
-		lines = output.split("\n\n")
-		# Remove first and empty lines
-		del lines[0]
+		
+		if len(args) > 0:
+			expected_lines.extend(args)
+		
+		output = commity_repo(self.test_repo_dir, branch, fixed_issues=True)
+		lines = re.sub(r"\t+", '', re.sub(r"\n+", '\n', output)).split("\n")
+		
+		# Remove empty strings
+		lines = [line for line in lines if len(line.strip()) > 0]
+		
 		lines = list(filter(lambda s: len(s) > 0, lines))
 		self.assertEqual(
 			len(lines), len(expected_lines), "Expected {} lines.\nExpected lines:\n\t{}\nGot lines:\n\t{}".format(

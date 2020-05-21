@@ -13,7 +13,14 @@ p.add_argument(
 	default=None,
 	help="The branch were to collect the commits. If not given, default value is current branch.")
 p.add_argument(
+	"-i",
+	"--issue",
+	default=False,
+	help="If given, the first line will contain all the issues that have been marked as \"fixed\" in the commits "
+	"messages of the given branch.",
+	action="store_true")
+p.add_argument(
 	"-e", "--convert-emoji", default=False, help="Convert GitHub Emoji Markup to actual emoji.", action="store_true")
 args = p.parse_args()
 
-commity_repo(repo_path=args.repo, branch=args.branch, convert_emoji=args.convert_emoji)
+commity_repo(repo_path=args.repo, branch=args.branch, fixed_issues=args.issue, convert_emoji=args.convert_emoji)

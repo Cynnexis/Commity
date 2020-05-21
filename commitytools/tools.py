@@ -7,10 +7,25 @@ from typeguard import typechecked
 
 from commitytools import plural
 from commitytools.emoji import replace_emoji
+from commitytools.issue_tracker import get_issues
 
 
 @typechecked
-def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, convert_emoji: bool = False) -> str:
+def commity_repo(repo_path: Optional[str] = None,
+					branch: Optional[str] = None,
+					fixed_issues: bool = False,
+					convert_emoji: bool = False) -> str:
+	"""
+	Core function or the program.
+	:param repo_path: The path to the repository.
+	:param branch: The git branch to analyze.
+	:param fixed_issues: If `True`, the function will analyze the commits in the branch, and extract all issues
+	following a keyword associated to "fix", "resolve" or "close", and print "Fixed " followed by the detected issues.
+	Default value is `False`.
+	:param convert_emoji: If `True`, all GitHub emoji markup will be converted to actual emoji. This requires an
+	internet connection. If `False` (default value), the GitHub emoji markup are not treated.
+	:return: Return the string representing the branch (all the commits messages).
+	"""
 	# If no repo has been given, take the current directory
 	if repo_path is None:
 		repo_path = os.getcwd()
@@ -37,7 +52,7 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, 
 		raise git.exc.GitError("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
 			branch, plural(repo.branches, plural="es"), ', '.join(map(lambda b: b.name, repo.branches))))
 	
-	content = f"On branch {branch}\n\n"
+	content = ''
 	
 	# Get the list of all commits from the given branch
 	for i, commit in enumerate(repo.iter_commits(rev=branch)):
@@ -46,6 +61,19 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, 
 			content += beautify_commit(commit) + '\n'
 		else:
 			break
+	
+	# Add fixed issues
+	if fixed_issues:
+		issues = get_issues(content, only_fixed=True)
+		if len(issues) > 0:
+			fixed_str = "Fixed "
+			if len(issues) == 1:
+				fixed_str += issues[0]
+			else:
+				# Join all the issues, except for the last (add an 'and' instead of comma)
+				fixed_str += ", ".join(issue for issue in issues[:-1]) + f" and {issues[-1]}"
+			
+			content = fixed_str + ".\n\n" + content
 	
 	# Convert emoji
 	if convert_emoji:
