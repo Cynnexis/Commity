@@ -35,14 +35,14 @@ class CommityTest(unittest.TestCase):
 	
 	def test_lorem(self):
 		self.check_lines("lorem", [
-			"* :sparkles: Add lorem again!", "* :sparkles: Add more lorem!", "* :sparkles: Add lorem",
-			"* :pencil: Update README"
+			"Fixed #5, #4 and #2.", "* :sparkles: Add lorem again!", "* Fixed #5", "* :sparkles: Add more lorem!",
+			"* Fixed #4 and #2.", "* :sparkles: Add lorem", "* :pencil: Update README"
 		])
 	
 	def test_change_first_lorem_paragraph(self):
 		self.check_lines("change-first-lorem-paragraph", [
-			"* :pencil: Update first paragraph of lorem text", "* :sparkles: Add more lorem!", "* :sparkles: Add lorem",
-			"* :pencil: Update README"
+			"Fixed #4 and #2.", "* :pencil: Update first paragraph of lorem text", "* :sparkles: Add more lorem!",
+			"* Fixed #4 and #2.", "* :sparkles: Add lorem", "* :pencil: Update README"
 		])
 	
 	def check_lines(self, branch: str, expected_lines: Union[List[str], str], *args: str):

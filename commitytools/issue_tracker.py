@@ -2,6 +2,9 @@
 import re
 from typing import List, Optional
 
+# noinspection PyUnresolvedReferences
+Pattern = re.Pattern
+
 fix_keywords = frozenset([
 	"close",
 	"closes",
@@ -14,9 +17,9 @@ fix_keywords = frozenset([
 	"resolved",
 ])
 
-issue_pattern = re.compile(r"#(\d+)", re.IGNORECASE)
-# noinspection PyUnresolvedReferences
-fixed_issue_pattern: Optional[re.Pattern] = None
+issue_pattern: Pattern = re.compile(r"#(\d+)", re.IGNORECASE)
+fixed_issue_pattern: Optional[Pattern] = None
+separators_pattern: Pattern = re.compile(r"(?:\s+,\s*and|\s+and|\s*,)\s+", re.IGNORECASE)
 
 
 def init_pattern():
@@ -41,18 +44,53 @@ def get_issues(content: str, only_fixed: bool = False) -> List[int]:
 	:rtype: List[str]
 	"""
 	issues = []
+	
+	def extract_issues(matches: List[str]):
+		for match in matches:
+			try:
+				issue = int(match)
+				if issue not in issues:
+					issues.append(issue)
+			except ValueError:
+				pass
+	
 	if only_fixed:
 		init_pattern()
-		matches = re.findall(fixed_issue_pattern, content)
+		
+		# Try to get the issues after a separator
+		parts = re.split(separators_pattern, content)
+		found_first_fixed_issue = False
+		i = 0
+		for i, part in enumerate(parts):
+			matches = re.findall(fixed_issue_pattern, part)
+			
+			# Remove empty elements
+			matches = [match.strip() for match in matches if len(match.strip()) > 0]
+			
+			# If element matched, get all the issues from `part`
+			if len(matches) > 0:
+				extract_issues(matches)
+				
+				# If issues has been found, yeah! `i` is the starting point of the list
+				if len(issues) > 0:
+					found_first_fixed_issue = True
+					break
+		
+		if found_first_fixed_issue and i + 1 < len(parts):
+			# `i` is the index in `parts` where the fixed issues start
+			for part in parts[(i + 1):]:
+				# If the next "part" (after i) contains an issue after the separator, save it!
+				matches = re.findall(r"^" + issue_pattern.pattern, part)
+				# Remove empty elements
+				matches = [match.strip() for match in matches if len(match.strip()) > 0]
+				
+				if len(matches) > 0:
+					extract_issues(matches)
+				else:
+					# The list is finished.
+					break
 	else:
 		matches = re.findall(issue_pattern, content)
-	
-	for match in matches:
-		try:
-			issue = int(match)
-			if issue not in issues:
-				issues.append(issue)
-		except ValueError:
-			pass
+		extract_issues(matches)
 	
 	return issues

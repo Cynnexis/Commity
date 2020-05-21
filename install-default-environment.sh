@@ -3,15 +3,16 @@
 WORKSPACE_DIR=$(pwd)
 
 # Detect if we're in a Docker container, or not
-IN_DOCKER=$([[ $(grep -Ec "/docker" < /proc/1/cgroup) -gt 0 ]])
+[[ $(grep -Ec "/docker" < /proc/1/cgroup) -gt 0 ]]
+IN_DOCKER=$?
 
 # Update APT packages list if in Docker
-if [[ $IN_DOCKER = true ]]; then
+if [[ $IN_DOCKER = 0 ]]; then
 	echo "Docker container detected."
-	apt-get update -qq
-	apt-get upgrade -qq
-	apt-get install -qy git
-	apt-get install -qy vim
+	apt-get update -y
+	apt-get upgrade -y
+	apt-get install -y git
+	apt-get install -y vim
 
 	cp default-gitconfig.ini ~/.gitconfig
 	touch ~/.bashrc
@@ -24,7 +25,7 @@ fi
 
 mkdir git-test-repo
 cd git-test-repo
-if [[ $IN_DOCKER = true ]]; then
+if [[ $IN_DOCKER = 0 ]]; then
 	TEST_REPO=$(pwd)
 	DEBUG="True"
 	echo -e "TEST_REPO=$TEST_REPO\nDEBUG=$DEBUG" >> /etc/environment
@@ -49,10 +50,12 @@ fi
 #                       |     |
 #                       |  *  | commit 10 (lorem)
 #                       |  |  |     ✨ Add lorem again
+#                       |  |  |         * Fixed #5
 #                       |  | /
 #                       |  |/
 #                       |  * commit 9 (lorem)
 #                       |  |     ✨ Add more lorem!
+#                       |  |         * Fixed #4 and #2.
 #                       |  |
 #                       |  * commit 8 (lorem)
 #                       |  |     ✨ Add lorem
@@ -137,7 +140,7 @@ git commit -m ":sparkles: Add lorem" # commit 8 (lorem)
 echo "Pretium lectus quam id leo in vitae turpis massa." >> lorem.txt
 # Commit
 git add .
-git commit -m ":sparkles: Add more lorem!" # commit 9 (lorem)
+git commit -m "$(echo -e ':sparkles: Add more lorem!\n\n* Fixed #4 and #2.')" # commit 9 (lorem)
 
 # Create new branch on lorem
 git checkout -b change-first-lorem-paragraph
@@ -147,7 +150,7 @@ git checkout lorem
 echo "Ac tincidunt vitae semper quis lectus nulla at." >> lorem.txt
 # Commit
 git add .
-git commit -m ":sparkles: Add lorem again!" # commit 10 (lorem)
+git commit -m "$(echo -e ':sparkles: Add lorem again!\n\n* Fixed #5')" # commit 10 (lorem)
 
 # Go to branch created before and commit
 git checkout change-first-lorem-paragraph
@@ -183,6 +186,6 @@ git merge acknowledgements --no-ff -m ":twisted_rightwards_arrows: Merge branch 
 cd $WORKSPACE_DIR
 
 # Copy bashrc to current user (root)
-if [[ $IN_DOCKER = true ]]; then
+if [[ $IN_DOCKER = 0 ]]; then
 	cp -f /.bashrc ~/.bashrc
 fi
