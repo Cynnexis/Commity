@@ -55,7 +55,7 @@ fi
 #                       |  |/
 #                       |  * commit 9 (lorem)
 #                       |  |     ✨ Add more lorem!
-#                       |  |         * Fixed #4 and #2.
+#                       |  |         * Fixed #4 and gh_user/gh_project#2.
 #                       |  |
 #                       |  * commit 8 (lorem)
 #                       |  |     ✨ Add lorem
@@ -140,7 +140,7 @@ git commit -m ":sparkles: Add lorem" # commit 8 (lorem)
 echo "Pretium lectus quam id leo in vitae turpis massa." >> lorem.txt
 # Commit
 git add .
-git commit -m "$(echo -e ':sparkles: Add more lorem!\n\n* Fixed #4 and #2.')" # commit 9 (lorem)
+git commit -m "$(echo -e ':sparkles: Add more lorem!\n\n* Fixed #4 and gh_user/gh_project#2.')" # commit 9 (lorem)
 
 # Create new branch on lorem
 git checkout -b change-first-lorem-paragraph

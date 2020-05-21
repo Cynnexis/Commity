@@ -3,6 +3,8 @@ import re
 from typing import List, Optional
 
 # noinspection PyUnresolvedReferences
+from typeguard import typechecked
+
 Pattern = re.Pattern
 
 fix_keywords = frozenset([
@@ -17,7 +19,7 @@ fix_keywords = frozenset([
 	"resolved",
 ])
 
-issue_pattern: Pattern = re.compile(r"#(\d+)", re.IGNORECASE)
+issue_pattern: Pattern = re.compile(r"((?:[\w\-]+/[\w\-]+)?#\d+)", re.IGNORECASE)
 fixed_issue_pattern: Optional[Pattern] = None
 separators_pattern: Pattern = re.compile(r"(?:\s+,\s*and|\s+and|\s*,)\s+", re.IGNORECASE)
 
@@ -32,27 +34,24 @@ def init_pattern():
 	return fixed_issue_pattern
 
 
-def get_issues(content: str, only_fixed: bool = False) -> List[int]:
+@typechecked
+def get_issues(content: str, only_fixed: bool = False) -> List[str]:
 	"""
 	Get all the issues mentioned in the given content. An issue is a strictly positive number  beginning with a '#'
 	(sharp sign).
 	:param content: The string to parse.
 	:param only_fixed: If `True`, only the issues following a synonym of "fix" will be returned. Defaults to `False`.
-	:return: Return a list of number issues detected in the content. If an issue has an invalid number, it is ignored.
-	If an issue is given with a correct number, but is actually not associated to any issues in the project, it will be
-	given, as this function does not connect to the remote. If no issues are detected, an empty list is returned.
+	:return: Return a list of issues detected in the content. If an issue is actually not associated to any issues in
+	the project, it will be given, as this function does not connect to the remote. If no issues are detected, an empty
+	list is returned.
 	:rtype: List[str]
 	"""
 	issues = []
 	
 	def extract_issues(matches: List[str]):
 		for match in matches:
-			try:
-				issue = int(match)
-				if issue not in issues:
-					issues.append(issue)
-			except ValueError:
-				pass
+			if match not in issues:
+				issues.append(match)
 	
 	if only_fixed:
 		init_pattern()

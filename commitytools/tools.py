@@ -53,10 +53,10 @@ def commity_repo(repo_path: Optional[str] = None, branch: Optional[str] = None, 
 	if len(issues) > 0:
 		fixed_str = "Fixed "
 		if len(issues) == 1:
-			fixed_str += f"#{issues[0]}"
+			fixed_str += issues[0]
 		else:
 			# Join all the issues, except for the last (add an 'and' instead of comma)
-			fixed_str += ", ".join(f"#{issue}" for issue in issues[:-1]) + f" and #{issues[-1]}"
+			fixed_str += ", ".join(issue for issue in issues[:-1]) + f" and {issues[-1]}"
 		
 		content = fixed_str + ".\n\n" + content
 	
