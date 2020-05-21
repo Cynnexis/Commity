@@ -2,9 +2,9 @@
 import re
 from typing import List, Optional
 
-# noinspection PyUnresolvedReferences
 from typeguard import typechecked
 
+# noinspection PyUnresolvedReferences
 Pattern = re.Pattern
 
 fix_keywords = frozenset([

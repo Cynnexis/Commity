@@ -54,7 +54,7 @@ class CommityTest(unittest.TestCase):
 		if len(args) > 0:
 			expected_lines.extend(args)
 		
-		output = commity_repo(self.test_repo_dir, branch)
+		output = commity_repo(self.test_repo_dir, branch, fixed_issues=True)
 		lines = re.sub(r"\t+", '', re.sub(r"\n+", '\n', output)).split("\n")
 		
 		# Remove empty strings
