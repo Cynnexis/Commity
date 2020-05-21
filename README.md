@@ -2,9 +2,8 @@
 
 ![language: python][shield-language] ![license: GPL][shield-license] ![python: 3.7][shield-python-version] ![Commity CI/CD](https://github.com/Cynnexis/Commity/workflows/Commity%20CI/CD/badge.svg)
 
-Commity is a script that print the commits from a git branch in a
-user-friendly way using Markdown format, inspired from default
-pull-requests templates in BitBucket.
+Commity is a script that print the commits from a git branch in a user-friendly way using Markdown format, inspired from
+default pull-requests templates in BitBucket.
 
 ## Getting Started
 
@@ -31,9 +30,6 @@ conda install --name myenv -c conda-forge --file requirements.txt
 To install this script, you first need to clone this project, and
 then execute [`commity.py`](https://github.com/Cynnexis/Commity/blob/master/commity.py).
 
-> Note that if you want to change the source code of the project, you will need to run `yarn` in order to install the
-> NPM modules. `Husky` is the module that help format the code using YAPF at each pre-commit.
-
 ### Usage
 
 To execute Commity, you might need to specify some arguments:
@@ -42,41 +38,75 @@ To execute Commity, you might need to specify some arguments:
 the current folder is taken.
 * `-b` or `--branch`: The name of the branch where to get the
 commits. By default, the current branch is taken.
-* `-o` or `--output`: The output file. All information will be written in the
-given file. If the file is invalid, or no file is given, stdout is used instead.
+* `-i` or `--issue`: If given, the first line will contain all the issues that have been marked as "fixed" in the
+commits messages of the given branch.
 
 **Example:**
 
-`python commity.py -r C:\Users\Foo\MyProject -b feat/gui-buttons -o output.txt`
+`python commity.py -r C:\Users\Foo\MyProject -b feat/gui-buttons -i`
 
 #### Run with Docker 🐳
 
-It is possible to run `commity` from the given `Dockerfile`. Note that this method
-is not optimized for this kind of usage, and is relatively long to execute, as you
-will certainly have to build the image. Nevertheless, it is a good method if you
-don't want to install Python and/or the required modules.
+It is possible to run `commity` from the given `Dockerfile`.
 
 To execute `commity` using docker, please refer to the example below:
+
+**With Makefile:**
+
+```bash
+cd path/to/commity
+make docker-build
+docker run -it -v "C:\Users\Foo\myproject:/myproject" cynnexis/commity run -r /myproject -b master --issue
+```
+
+**Without Makefile:**
 
 ```bash
 cd path/to/commity
 docker build -t cynnexis/commity .
-docker run -it -v "C:\Users\Foo\myproject:/myproject" cynnexis/commity run -r /myproject -b master -o /myproject/commity-output.txt
+docker run -it -v "C:\Users\Foo\myproject:/myproject" cynnexis/commity run -r /myproject -b master --issue
 ```
 
-**Explanation:**
+### Alias
 
-1. The first command is to move to the project repository.
-2. Build the image, and name it "`cynnexis/commity`"
-3. This command is the more complex one. It runs a container (`docker run -it`),
-create a volume between your project on your host (your machine) and its copy
-in the container (`-v "C:\Users\Foo\myproject:/myproject"`). Please replace the
-first part with your project path on your host, and the second part with your
-project name (with the `/` at the beginning). Then, the image name is specified
-(`cynnexis/commity`), and the arguments are passed. After `run`, you can put any
-arguments for `commity.py`. Make sure to replace `myproject` with your project
-name again. If the command is successfully executed, you'll find the file
-`commity-output.txt` under your project name on your host.
+If your using bash, you can setup an alias to call `commity`:
+
+First, let's create a conda environment if you have not done iet yet:
+
+```bash
+cd path/to/commity
+conda create --name commity python=3.7.6
+conda install --name commity -c conda-forge --file requirements.txt
+```
+
+Then, activate the environment:
+
+```bash
+conda activate commity
+```
+
+Get the path to your Python environment:
+
+```bash
+which python
+```
+
+For this tutorial, let's assume the path is `/home/user/anaconda3/envs/commity/bin/python`. Create an alias with the
+following command:
+
+```bash
+echo alias commity="/home/user/anaconda3/envs/commity/bin/python /absolute/path/to/commity/commity.py" >> ~/.bash_aliases
+```
+
+And it's ready! To get all the commits messages of a local repository, go to your project folder, and execute the
+`commity` command such as:
+
+```bash
+commity -i
+```
+
+The command will assume the current working directory is the repository, and will analyze the current branch. The
+fixed issues will be printed with the `-i` option.
 
 ## Built With
 
@@ -91,9 +121,7 @@ name again. If the command is successfully executed, you'll find the file
 Contribution are not permitted yet, because this project is
 really simple and should not be a real problem. You noticed a bug
 in the script or in the source code? Feel free to post an issue
-about it. You want to fight some scary and nasty segmentation
-problem? Then go to the [Linux Kernel GitHub](https://github.com/torvalds/linux)
-to fight some evil bugs, and help make UNIX a better system!
+about it.
 
 ## Author
 
@@ -108,12 +136,6 @@ there!)
 
 ## Acknowledgments
 
-* [Joey](https://stackoverflow.com/users/73070/joey) from
-[this stackoverflow post](https://stackoverflow.com/a/12093994/7347145),
-to have written the monstrous regex to match branch name.
-* [NIKHIL C M](https://stackoverflow.com/users/3599013/nikhil-c-m) and
-[Joe Chrysler](https://stackoverflow.com/users/361494/joe-chrysler) from
-[this stackoverflow post](https://stackoverflow.com/a/52025740/7347145) for the git command to get a branch parent.
 * Git team ; what a flawless system they created!
 
 [python 3.7]: https://www.python.org/downloads/release/python-374/
