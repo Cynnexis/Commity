@@ -1,6 +1,7 @@
-pip
-gitpython
-typeguard
-networkx
-matplotlib
-yapf
+beautifulsoup4==4.9.1
+coverage==5.1
+gitpython==3.1.2
+networkx==2.4
+requests==2.23.0
+typeguard==2.7.1
+yapf==0.30.0

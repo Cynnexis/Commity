@@ -2,25 +2,23 @@ version: '3.7'
 services:
   commity:
     container_name: commity
-    # Use the following lines to build the image from scratch
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-    # Use this line if the image is already compiled:
     image: cynnexis/commity
     volumes:
-      - 'D:\Workspace\PycharmProjects\Commity:/root/commity'
+      - './:/root/commity'
+    command: run
 
   test:
     container_name: commity_test
-    # Use the following lines to build the image from scratch
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-    # Use this line if the image is already compiled:
     image: cynnexis/commity
     volumes:
-      - 'D:\Workspace\PycharmProjects\Commity:/root/commity'
+      - './:/root/commity'
     environment:
       - DEBUG=True
-    command: bash -c "source ~/.bashrc && python -m unittest ~/commity/test/commity-test.py"
+    command: test
+
+  lint:
+    container_name: commity-lint
+    image: cynnexis/commity
+    volumes:
+      - './:/root/commity'
+    command: lint

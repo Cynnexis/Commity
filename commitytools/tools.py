@@ -1,132 +1,95 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-from typing import Optional, Union, Tuple, Any, Iterable
-import networkx as nx
+from typing import Optional, Union, Tuple
 
 import git
 from typeguard import typechecked
 
-log_buffer = ""
-DEBUG = bool(os.getenv("DEBUG", "False"))
+from commitytools import plural
+from commitytools.emoji import replace_emoji
+from commitytools.issue_tracker import get_issues
 
-# Pattern inspired from Joey's, https://stackoverflow.com/a/12093994/7347145 (consulted on July the 9th, 2019)
-# This pattern detect the name of the branch in the revision string of a commit
-rev_pattern = re.compile(
-	r"([a-fA-F0-9]{40})\s((?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!@$)(?!.*\\)[^\000-\037\177 ~^:?*[]+/?[^\000-\037\177 ~^:?*[]+(?<!\.lock)(?<!/)(?<!\.))(?:\^([0-9]+))?(?:~([0-9]+))?"
-)
+trailing_newline = re.compile("(?:\r?\n)+$", re.IGNORECASE | re.MULTILINE)
+
 
 @typechecked
-def commity_repo(repo: Optional[str] = None,
+def commity_repo(repo_path: Optional[str] = None,
 					branch: Optional[str] = None,
-					output: Optional[str] = None) -> str:
-	global log_buffer
-	log_buffer = ""
-	
-	# Create graph for repo
-	graph = nx.DiGraph()
-	
+					fixed_issues: bool = False,
+					convert_emoji: bool = False) -> str:
+	"""
+	Core function or the program.
+	:param repo_path: The path to the repository.
+	:param branch: The git branch to analyze.
+	:param fixed_issues: If `True`, the function will analyze the commits in the branch, and extract all issues
+	following a keyword associated to "fix", "resolve" or "close", and print "Fixed " followed by the detected issues.
+	Default value is `False`.
+	:param convert_emoji: If `True`, all GitHub emoji markup will be converted to actual emoji. This requires an
+	internet connection. If `False` (default value), the GitHub emoji markup are not treated.
+	:return: Return the string representing the branch (all the commits messages).
+	"""
 	# If no repo has been given, take the current directory
-	if repo is None:
-		repo = os.path.dirname(os.path.realpath(__file__))
+	if repo_path is None:
+		repo_path = os.getcwd()
+	
+	if os.name.strip().lower() == "nt":
+		repo_path = repo_path.replace('\\', '/')
+	else:
+		repo_path = os.path.normpath(repo_path)
 	
 	# Get the repo
-	try:
-		repo = git.Repo(repo)
-	except git.exc.InvalidGitRepositoryError:
-		log("ERROR: The given folder is not a git repo: \"{}\"".format(repo),
-			output=output)
-		exit(-1)
+	repo = git.Repo(repo_path)
 	
 	# noinspection PyUnboundLocalVariable
 	if repo.bare:
-		log("ERROR: The given repository is bare.", output=output)
-		exit(-2)
-	
-	# Fill graph
-	branches: Iterable[git.Head] = repo.branches
-	for b in branches:
-		for c in repo.iter_commits(rev=b.name):
-			if c not in graph:
-				graph.add_node(c)
-			for parent in c.parents:
-				if not graph.has_edge(parent, c):
-					graph.add_edge(parent, c, weight=c.stats.total["lines"])
-	
-	# Draw the graph if in debug mode
-	if DEBUG:
-		try:
-			import matplotlib.pyplot as plt
-			nx.draw(
-				graph,
-				labels={c: c.summary for c in graph},
-				node_size=400,
-				font_size=16,
-				font_color='r',
-				pos=nx.spring_layout(graph,
-										k=0.15,
-										iterations=20))
-			plt.savefig("graph.png")
-		except ImportError:
-			pass
+		raise git.exc.InvalidGitRepositoryError("The given repository is bare.")
 	
 	# If no branch has been given, take the current branch (it might be `master`)
 	if branch is None:
 		branch = repo.active_branch.name
 	
-	dlog("Analysing branch \"{}\"", branch)
-	
+	# noinspection PyTypeHints
+	repo.branches: git.util.IterableList
 	if branch not in repo.branches:
-		log("The branch \"{}\" does not exist.".format(branch), output=output)
-		exit(-3)
+		raise git.exc.GitError("ERROR: The branch \"{}\" does not exist.\nAvailable branch{}: {}".format(
+			branch, plural(repo.branches, plural="es"), ', '.join(map(lambda b: b.name, repo.branches))))
 	
-	# If an output has been given and the file already exist, remove it:
-	if output is not None and os.path.exists(output) and os.path.isfile(output):
-		os.remove(output)
-	
-	log("On branch " + branch, end="\n\n", output=output)
+	content = ''
 	
 	# Get the list of all commits from the given branch
-	for commit in repo.iter_commits(rev=branch):
-		# If the commit has more than 1 child, then stop here. We just met a merge commit.
-		if len(list(graph.successors(commit))) > 1:
+	for i, commit in enumerate(repo.iter_commits(rev=branch)):
+		# Print the commit
+		if i == 0 or len(commit.parents) <= 1:
+			content += beautify_commit(commit) + '\n'
+		else:
 			break
-		# If we detect we are not in the same branch anymore (come back to the branch parent), then we stop the loop.
-		branch_name = get_head_name_from_commit(commit)
-		if branch_name == branch or branch_name not in repo.branches:
-			# Print the commit
-			log(beautify_commit(commit), output=output)
+	
+	# Remove trailing new lines
+	content = re.sub(trailing_newline, '', content)
+	
+	# Add fixed issues
+	if fixed_issues:
+		issues = get_issues(content, only_fixed=True)
+		if len(issues) > 0:
+			fixed_str = "Fixed "
+			if len(issues) == 1:
+				fixed_str += issues[0]
+			else:
+				# Join all the issues, except for the last (add an 'and' instead of comma)
+				fixed_str += ", ".join(issue for issue in issues[:-1]) + f" and {issues[-1]}"
+			
+			content = fixed_str + ".\n\n" + content
+	
+	# Convert emoji
+	if convert_emoji:
+		content = replace_emoji(content)
+	
+	print(content)
 	
 	repo.close()
-	return log_buffer
+	return content
 
-@typechecked
-def dlog(values: Any, *args):
-	if DEBUG:
-		if isinstance(values, str) and args is not None and len(args) > 0:
-			values = values.format(*args)
-		print("DEBUG> {}".format(values))
-
-@typechecked
-def log(values: Any = '',
-		output: Optional[str] = None,
-		mode: str = 'a',
-		encoding: str = "utf-8",
-		end='\n',
-		flush: bool = True,
-		*args):
-	global log_buffer
-	log_buffer += values + end
-	if isinstance(values, str) and args is not None and len(args) > 0:
-		values = values.format(*args)
-	if output is not None:
-		try:
-			f = open(output, mode=mode, encoding=encoding)
-			f.write(values + end)
-		except OSError:
-			print(values, end=end, flush=flush)
-	else:
-		print(values, end=end, flush=flush)
 
 @typechecked
 def decompose_commit(commit: Union[str, git.Commit]) -> Tuple[str, ...]:
@@ -148,25 +111,6 @@ def decompose_commit(commit: Union[str, git.Commit]) -> Tuple[str, ...]:
 		else:
 			return commit,
 
-@typechecked
-def get_head_name_from_commit(commit: Union[str, git.Commit]) -> str:
-	"""
-	Return the name of the branch associated to the given commit.
-	:param commit: The commit. It can be a Commit object, or the revision string.
-	:return: Return the branch name. If not found, return an empty string.
-	"""
-	if isinstance(commit, git.Commit):
-		commit = commit.name_rev
-	
-	global rev_pattern
-	matches = re.findall(rev_pattern, commit)
-	if matches is None or len(matches) == 0:
-		return ''
-	matches = matches[0]
-	if matches is None or len(matches) < 2:
-		return ''
-	
-	return matches[1]
 
 @typechecked
 def beautify_commit(commit: Union[str, git.Commit]) -> str:
@@ -176,10 +120,7 @@ def beautify_commit(commit: Union[str, git.Commit]) -> str:
 	:return: Return the commit in a more adapted format.
 	"""
 	
-	def add_bullet(part: str,
-					bullet: str = '*',
-					prefix: str = '',
-					suffix: str = '\n') -> str:
+	def add_bullet(part: str, bullet: str = '*', prefix: str = '', suffix: str = '\n') -> str:
 		if not part.startswith(bullet):
 			return prefix + bullet + ' ' + part + suffix
 		else:
